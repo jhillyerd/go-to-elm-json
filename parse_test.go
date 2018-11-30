@@ -106,3 +106,58 @@ func TestParseStructMultipleNames(t *testing.T) {
 		t.Error("Module struct did not match expectations:\n" + strings.Join(diff, "\n"))
 	}
 }
+
+func TestParseStructTypeTypeConversions(t *testing.T) {
+	want := &Module{
+		Name: "OtherTypes",
+		Fields: []Field{
+			{
+				GoName:     "AnInteger",
+				GoType:     "int",
+				JSONName:   "AnInteger",
+				ElmName:    "anInteger",
+				ElmType:    "Int",
+				ElmDecoder: "int",
+			},
+			{
+				GoName:     "BigInteger",
+				GoType:     "int64",
+				JSONName:   "BigInteger",
+				ElmName:    "bigInteger",
+				ElmType:    "Int",
+				ElmDecoder: "int",
+			},
+			{
+				GoName:     "AFloat",
+				GoType:     "float32",
+				JSONName:   "AFloat",
+				ElmName:    "aFloat",
+				ElmType:    "Float",
+				ElmDecoder: "float",
+			},
+			{
+				GoName:     "BigFloat",
+				GoType:     "float64",
+				JSONName:   "BigFloat",
+				ElmName:    "bigFloat",
+				ElmType:    "Float",
+				ElmDecoder: "float",
+			},
+			{
+				GoName:     "NoNoNo",
+				GoType:     "bool",
+				JSONName:   "NoNoNo",
+				ElmName:    "noNoNo",
+				ElmType:    "Bool",
+				ElmDecoder: "bool",
+			},
+		},
+	}
+	got, err := parseStructType(examples, "OtherTypes")
+	if err != nil {
+		t.Fatalf("%+v", err)
+	}
+	if diff := deep.Equal(got, want); diff != nil {
+		t.Error("Module struct did not match expectations:\n" + strings.Join(diff, "\n"))
+	}
+}

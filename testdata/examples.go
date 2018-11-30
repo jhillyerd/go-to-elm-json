@@ -18,6 +18,15 @@ type Strings struct {
 	internalBareString     string
 }
 
+// OtherTypes is a struct with types other than string.
+type OtherTypes struct {
+	AnInteger  int
+	BigInteger int64
+	AFloat     float32
+	BigFloat   float64
+	NoNoNo     bool
+}
+
 // MultiNames defines multiple fields per line.
 type MultiNames struct {
 	One, Two, Three string
