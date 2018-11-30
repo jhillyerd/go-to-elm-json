@@ -31,7 +31,7 @@ func TestParseStructTypeErrors(t *testing.T) {
 
 func TestParseStructTypeNameConversions(t *testing.T) {
 	want := &Module{
-		Name: "Something",
+		Name: "Strings",
 		Fields: []Field{
 			{
 				GoName:     "ExportedBareString",
@@ -70,7 +70,7 @@ func TestParseStructTypeNameConversions(t *testing.T) {
 
 func TestParseStructMultipleNames(t *testing.T) {
 	want := &Module{
-		Name: "Something",
+		Name: "MultiNames",
 		Fields: []Field{
 			{
 				GoName:     "One",

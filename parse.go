@@ -80,7 +80,9 @@ func parseStructType(filePath string, typeName string) (*Module, error) {
 				jsonName = tagName
 			}
 
-			elmName := strings.ToLower(goName[0:1]) + goName[1:]
+			// Handle abbrevations.
+			camelCaseName := camelCase(goName)
+			elmName := strings.ToLower(camelCaseName[0:1]) + camelCaseName[1:]
 			elmType, elmDecoder := elmType(typeIdent.Name)
 			fields = append(fields, Field{
 				GoName:     goName,
