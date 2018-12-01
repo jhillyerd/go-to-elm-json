@@ -36,7 +36,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("%+v", err)
 	}
-	module, err := parseStructType(objectName, structType)
+	module, err := moduleFromStruct(structType, objectName)
 	if err != nil {
 		log.Fatalf("%+v", err)
 	}

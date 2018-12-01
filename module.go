@@ -23,17 +23,17 @@ type Field struct {
 	ElmDecoder string
 }
 
-func parseStructType(typeName string, root *types.Struct) (*Module, error) {
-	count := root.NumFields()
+func moduleFromStruct(structDef *types.Struct, moduleName string) (*Module, error) {
+	count := structDef.NumFields()
 	if count == 0 {
-		return nil, errors.Errorf("struct %v had no fields", typeName)
+		return nil, errors.Errorf("struct %v had no fields", moduleName)
 	}
 
 	// Convert to our field type.
 	var fields []Field
-	for i := 0; i < root.NumFields(); i++ {
-		sfield := root.Field(i)
-		stag := root.Tag(i)
+	for i := 0; i < structDef.NumFields(); i++ {
+		sfield := structDef.Field(i)
+		stag := structDef.Tag(i)
 		if !sfield.Exported() {
 			continue
 		}
@@ -60,5 +60,5 @@ func parseStructType(typeName string, root *types.Struct) (*Module, error) {
 		})
 	}
 
-	return &Module{Name: typeName, Fields: fields}, nil
+	return &Module{Name: moduleName, Fields: fields}, nil
 }

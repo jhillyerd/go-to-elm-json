@@ -9,7 +9,7 @@ import (
 
 const examples = "testdata/examples.go"
 
-func TestParseStructTypeErrors(t *testing.T) {
+func TestModuleFromStructErrors(t *testing.T) {
 	prog, _, err := progFromArgs([]string{examples})
 	if err != nil {
 		t.Fatal(err)
@@ -27,17 +27,17 @@ func TestParseStructTypeErrors(t *testing.T) {
 	for _, tt := range tests {
 		structType, err := structFromProg(prog, "main", tt.name)
 		if err == nil {
-			_, err = parseStructType(tt.name, structType)
+			_, err = moduleFromStruct(structType, tt.name)
 		}
 		got := err != nil
 		if got != tt.errorExpected {
-			t.Errorf("parseStructType(%q): got error %v, want error %v\nerror was: %v",
+			t.Errorf("moduleFromStruct(%q): got error %v, want error %v\nerror was: %v",
 				tt.name, got, tt.errorExpected, err)
 		}
 	}
 }
 
-func TestParseStructTypeNameConversions(t *testing.T) {
+func TestModuleFromStructNameConversions(t *testing.T) {
 	prog, _, err := progFromArgs([]string{examples})
 	if err != nil {
 		t.Fatal(err)
@@ -77,7 +77,7 @@ func TestParseStructTypeNameConversions(t *testing.T) {
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
-	got, err := parseStructType(name, structType)
+	got, err := moduleFromStruct(structType, name)
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
@@ -126,7 +126,7 @@ func TestParseStructMultipleNames(t *testing.T) {
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
-	got, err := parseStructType(name, structType)
+	got, err := moduleFromStruct(structType, name)
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
@@ -135,7 +135,7 @@ func TestParseStructMultipleNames(t *testing.T) {
 	}
 }
 
-func TestParseStructTypeTypeConversions(t *testing.T) {
+func TestModuleFromStructTypeConversions(t *testing.T) {
 	prog, _, err := progFromArgs([]string{examples})
 	if err != nil {
 		t.Fatal(err)
@@ -191,7 +191,7 @@ func TestParseStructTypeTypeConversions(t *testing.T) {
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
-	got, err := parseStructType(name, structType)
+	got, err := moduleFromStruct(structType, name)
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
