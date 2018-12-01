@@ -4,10 +4,11 @@ var elmTemplate = `module {{.Name}} exposing ({{.Name}})
 
 import Json.Decode as D
 import Json.Decode.Pipeline as P
+import Json.Encode as E
 
 type alias {{.Name}} =
 {{- range $index, $el := .Fields }}
-	{{ if $index }},{{ else }}{{"{"}}{{ end }} {{ $el.ElmName }} : {{ $el.ElmType -}}
+	{{ if $index }},{{ else }}{{"{"}}{{ end }} {{ .ElmName }} : {{ .ElmType -}}
 {{end}}
 	{{"}"}}
 
@@ -18,4 +19,12 @@ decoder =
 {{- range .Fields }}
 		|> P.required "{{ .JSONName }}" D.{{ .ElmDecoder -}}
 {{end}}
+
+encode : {{.Name}} -> Value
+encode r =
+	E.object
+{{- range $index, $el := .Fields }}
+		{{ if $index }},{{ else }}[{{ end }} ("{{ .JSONName }}", E.{{ .ElmDecoder }} r.{{ .ElmName -}}
+{{end}}
+		]
 `
