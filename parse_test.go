@@ -10,6 +10,11 @@ import (
 const examples = "testdata/examples.go"
 
 func TestParseStructTypeErrors(t *testing.T) {
+	prog, _, err := progFromArgs([]string{examples})
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	var tests = []struct {
 		name          string
 		errorExpected bool
@@ -20,7 +25,10 @@ func TestParseStructTypeErrors(t *testing.T) {
 		{"Strings", false},
 	}
 	for _, tt := range tests {
-		_, err := parseStructType(examples, tt.name)
+		structType, err := structFromProg(prog, "main", tt.name)
+		if err == nil {
+			_, err = parseStructType(tt.name, structType)
+		}
 		got := err != nil
 		if got != tt.errorExpected {
 			t.Errorf("parseStructType(%q): got error %v, want error %v\nerror was: %v",
@@ -30,8 +38,14 @@ func TestParseStructTypeErrors(t *testing.T) {
 }
 
 func TestParseStructTypeNameConversions(t *testing.T) {
+	prog, _, err := progFromArgs([]string{examples})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	name := "Strings"
 	want := &Module{
-		Name: "Strings",
+		Name: name,
 		Fields: []Field{
 			{
 				GoName:     "ExportedBareString",
@@ -59,7 +73,11 @@ func TestParseStructTypeNameConversions(t *testing.T) {
 			},
 		},
 	}
-	got, err := parseStructType(examples, "Strings")
+	structType, err := structFromProg(prog, "main", name)
+	if err != nil {
+		t.Fatalf("%+v", err)
+	}
+	got, err := parseStructType(name, structType)
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
@@ -69,8 +87,14 @@ func TestParseStructTypeNameConversions(t *testing.T) {
 }
 
 func TestParseStructMultipleNames(t *testing.T) {
+	prog, _, err := progFromArgs([]string{examples})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	name := "MultiNames"
 	want := &Module{
-		Name: "MultiNames",
+		Name: name,
 		Fields: []Field{
 			{
 				GoName:     "One",
@@ -98,7 +122,11 @@ func TestParseStructMultipleNames(t *testing.T) {
 			},
 		},
 	}
-	got, err := parseStructType(examples, "MultiNames")
+	structType, err := structFromProg(prog, "main", name)
+	if err != nil {
+		t.Fatalf("%+v", err)
+	}
+	got, err := parseStructType(name, structType)
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
@@ -108,8 +136,14 @@ func TestParseStructMultipleNames(t *testing.T) {
 }
 
 func TestParseStructTypeTypeConversions(t *testing.T) {
+	prog, _, err := progFromArgs([]string{examples})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	name := "OtherTypes"
 	want := &Module{
-		Name: "OtherTypes",
+		Name: name,
 		Fields: []Field{
 			{
 				GoName:     "AnInteger",
@@ -153,7 +187,11 @@ func TestParseStructTypeTypeConversions(t *testing.T) {
 			},
 		},
 	}
-	got, err := parseStructType(examples, "OtherTypes")
+	structType, err := structFromProg(prog, "main", name)
+	if err != nil {
+		t.Fatalf("%+v", err)
+	}
+	got, err := parseStructType(name, structType)
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}

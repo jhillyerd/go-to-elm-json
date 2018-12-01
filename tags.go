@@ -5,8 +5,8 @@ import (
 )
 
 const (
-	tagPrefix = "`json:\""
-	tagSuffix = "\"`"
+	tagPrefix = "json:\""
+	tagSuffix = "\""
 )
 
 // parseTag splits a struct field's json tag into its name and comma-separated options.

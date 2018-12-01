@@ -7,9 +7,9 @@ func TestParseTag(t *testing.T) {
 		input, name, options string
 	}{
 		{"bad-prefix\"`", "", ""},
-		{"`json:\"bad-suffix", "", ""},
-		{"`json:\"name\"`", "name", ""},
-		{"`json:\"name,option\"`", "name", "option"},
+		{"json:\"bad-suffix", "", ""},
+		{"json:\"name\"", "name", ""},
+		{"json:\"name,option\"", "name", "option"},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.input, func(t *testing.T) {
