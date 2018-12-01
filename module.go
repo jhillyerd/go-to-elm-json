@@ -15,12 +15,9 @@ type Module struct {
 
 // Field represents a Go -> JSON -> Elm field.
 type Field struct {
-	GoName     string
-	GoType     string
-	JSONName   string
-	ElmName    string
-	ElmType    string
-	ElmDecoder string
+	JSONName string
+	ElmName  string
+	ElmType  ElmType
 }
 
 func moduleFromStruct(structDef *types.Struct, moduleName string) (*Module, error) {
@@ -49,14 +46,11 @@ func moduleFromStruct(structDef *types.Struct, moduleName string) (*Module, erro
 		// Handle abbrevations.
 		camelCaseName := camelCase(goName)
 		elmName := strings.ToLower(camelCaseName[0:1]) + camelCaseName[1:]
-		elmType, elmDecoder := elmType(goType)
+		elmType := elmType(goType)
 		fields = append(fields, Field{
-			GoName:     goName,
-			GoType:     goType.String(),
-			JSONName:   jsonName,
-			ElmName:    elmName,
-			ElmType:    elmType,
-			ElmDecoder: elmDecoder,
+			JSONName: jsonName,
+			ElmName:  elmName,
+			ElmType:  elmType,
 		})
 	}
 

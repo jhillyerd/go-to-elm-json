@@ -41,6 +41,9 @@ func main() {
 		log.Fatalf("%+v", err)
 	}
 	err = tmpl.Execute(os.Stdout, module)
+	if err != nil {
+		log.Fatalf("%+v", err)
+	}
 }
 
 // progFromArgs takes an x/tools/go/loader argument string and parses the specified Go files.
