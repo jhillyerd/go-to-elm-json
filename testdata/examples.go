@@ -32,6 +32,13 @@ type MultiNames struct {
 	One, Two, Three string
 }
 
+// SliceTypes defines some list-like fields.
+type SliceTypes struct {
+	Bools   []bool
+	Floats  []float32
+	Strings []string
+}
+
 func main() {
 	fmt.Printf("Hello world!\n")
 }

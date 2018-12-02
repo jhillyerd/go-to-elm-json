@@ -8,23 +8,23 @@ import Json.Encode as E
 
 type alias {{.Name}} =
 {{- range $index, $el := .Fields }}
-	{{ if $index }},{{ else }}{{"{"}}{{ end }} {{ .ElmName }} : {{ .ElmType.Name -}}
+    {{ if $index }},{{ else }}{{"{"}}{{ end }} {{ .ElmName }} : {{ .ElmType.Name -}}
 {{end}}
-	{{"}"}}
+    {{"}"}}
 
 
 decoder : D.Decoder {{.Name}}
 decoder =
-	D.succeed {{.Name}}
+    D.succeed {{.Name}}
 {{- range .Fields }}
-		|> P.required "{{ .JSONName }}" {{ .ElmType.Codec "D" -}}
+        |> P.required "{{ .JSONName }}" {{ .ElmType.Codec "D" -}}
 {{end}}
 
-encode : {{.Name}} -> Value
+encode : {{.Name}} -> E.Value
 encode r =
-	E.object
+    E.object
 {{- range $index, $el := .Fields }}
-		{{ if $index }},{{ else }}[{{ end }} ("{{ .JSONName }}", {{ .ElmType.Codec "E" }} r.{{ .ElmName -}}
-{{end}}
-		]
+        {{ if $index }},{{ else }}[{{ end }} ("{{ .JSONName }}", {{ .ElmType.Codec "E" }} r.{{ .ElmName }})
+{{- end}}
+        ]
 `

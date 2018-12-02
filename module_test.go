@@ -46,7 +46,7 @@ func TestModuleFromStructNameConversions(t *testing.T) {
 	name := "Strings"
 	want := &Module{
 		Name: name,
-		Fields: []Field{
+		Fields: []*Field{
 			{
 				JSONName: "ExportedBareString",
 				ElmName:  "exportedBareString",
@@ -73,7 +73,10 @@ func TestModuleFromStructNameConversions(t *testing.T) {
 		t.Fatalf("%+v", err)
 	}
 	if diff := deep.Equal(got, want); diff != nil {
-		t.Error("Module struct did not match expectations:\n" + strings.Join(diff, "\n"))
+		t.Fatal("Module struct did not match expectations:\n" + strings.Join(diff, "\n"))
+	}
+	if !got.Equal(want) {
+		t.Error("Module struct did not match expectations, likely in an ElmType field.")
 	}
 }
 
@@ -86,7 +89,7 @@ func TestParseStructMultipleNames(t *testing.T) {
 	name := "MultiNames"
 	want := &Module{
 		Name: name,
-		Fields: []Field{
+		Fields: []*Field{
 			{
 				JSONName: "One",
 				ElmName:  "one",
@@ -113,7 +116,10 @@ func TestParseStructMultipleNames(t *testing.T) {
 		t.Fatalf("%+v", err)
 	}
 	if diff := deep.Equal(got, want); diff != nil {
-		t.Error("Module struct did not match expectations:\n" + strings.Join(diff, "\n"))
+		t.Fatal("Module struct did not match expectations:\n" + strings.Join(diff, "\n"))
+	}
+	if !got.Equal(want) {
+		t.Error("Module struct did not match expectations, likely in an ElmType field.")
 	}
 }
 
@@ -126,7 +132,7 @@ func TestModuleFromStructTypeConversions(t *testing.T) {
 	name := "OtherTypes"
 	want := &Module{
 		Name: name,
-		Fields: []Field{
+		Fields: []*Field{
 			{
 				JSONName: "AnInteger",
 				ElmName:  "anInteger",
@@ -163,6 +169,52 @@ func TestModuleFromStructTypeConversions(t *testing.T) {
 		t.Fatalf("%+v", err)
 	}
 	if diff := deep.Equal(got, want); diff != nil {
-		t.Error("Module struct did not match expectations:\n" + strings.Join(diff, "\n"))
+		t.Fatal("Module struct did not match expectations:\n" + strings.Join(diff, "\n"))
+	}
+	if !got.Equal(want) {
+		t.Error("Module struct did not match expectations, likely in an ElmType field.")
+	}
+}
+
+func TestModuleFromStructSlices(t *testing.T) {
+	prog, _, err := progFromArgs([]string{examples})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	name := "SliceTypes"
+	want := &Module{
+		Name: name,
+		Fields: []*Field{
+			{
+				JSONName: "Bools",
+				ElmName:  "bools",
+				ElmType:  &ElmListType{elem: elmBool},
+			},
+			{
+				JSONName: "Floats",
+				ElmName:  "floats",
+				ElmType:  &ElmListType{elem: elmFloat},
+			},
+			{
+				JSONName: "Strings",
+				ElmName:  "strings",
+				ElmType:  &ElmListType{elem: elmString},
+			},
+		},
+	}
+	structType, err := structFromProg(prog, "main", name)
+	if err != nil {
+		t.Fatalf("%+v", err)
+	}
+	got, err := moduleFromStruct(structType, name)
+	if err != nil {
+		t.Fatalf("%+v", err)
+	}
+	if diff := deep.Equal(got, want); diff != nil {
+		t.Fatal("Module struct did not match expectations:\n" + strings.Join(diff, "\n"))
+	}
+	if !got.Equal(want) {
+		t.Error("Module struct did not match expectations, likely in an ElmType field.")
 	}
 }

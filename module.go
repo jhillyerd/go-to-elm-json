@@ -10,7 +10,23 @@ import (
 // Module represents an Elm module.
 type Module struct {
 	Name   string
-	Fields []Field
+	Fields []*Field
+}
+
+// Equal tests for equality with another Module.
+func (m *Module) Equal(o *Module) bool {
+	if m.Name != o.Name {
+		return false
+	}
+	if len(m.Fields) != len(o.Fields) {
+		return false
+	}
+	for i, f := range m.Fields {
+		if !f.Equal(o.Fields[i]) {
+			return false
+		}
+	}
+	return true
 }
 
 // Field represents a Go -> JSON -> Elm field.
@@ -20,6 +36,13 @@ type Field struct {
 	ElmType  ElmType
 }
 
+// Equal test for equality with another field.
+func (f *Field) Equal(o *Field) bool {
+	return f.JSONName == o.JSONName &&
+		f.ElmName == o.ElmName &&
+		f.ElmType.Equal(o.ElmType)
+}
+
 func moduleFromStruct(structDef *types.Struct, moduleName string) (*Module, error) {
 	count := structDef.NumFields()
 	if count == 0 {
@@ -27,7 +50,7 @@ func moduleFromStruct(structDef *types.Struct, moduleName string) (*Module, erro
 	}
 
 	// Convert to our field type.
-	var fields []Field
+	var fields []*Field
 	for i := 0; i < structDef.NumFields(); i++ {
 		sfield := structDef.Field(i)
 		stag := structDef.Tag(i)
@@ -47,7 +70,7 @@ func moduleFromStruct(structDef *types.Struct, moduleName string) (*Module, erro
 		camelCaseName := camelCase(goName)
 		elmName := strings.ToLower(camelCaseName[0:1]) + camelCaseName[1:]
 		elmType := elmType(goType)
-		fields = append(fields, Field{
+		fields = append(fields, &Field{
 			JSONName: jsonName,
 			ElmName:  elmName,
 			ElmType:  elmType,
