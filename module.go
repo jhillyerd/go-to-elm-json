@@ -43,10 +43,10 @@ func (f *Field) Equal(o *Field) bool {
 		f.ElmType.Equal(o.ElmType)
 }
 
-func moduleFromStruct(structDef *types.Struct, moduleName string) (*Module, error) {
+func moduleFromStruct(structDef *types.Struct, typeName string) (*Module, error) {
 	count := structDef.NumFields()
 	if count == 0 {
-		return nil, errors.Errorf("struct %v had no fields", moduleName)
+		return nil, errors.Errorf("struct %v had no fields", typeName)
 	}
 
 	// Convert to our field type.
@@ -68,7 +68,7 @@ func moduleFromStruct(structDef *types.Struct, moduleName string) (*Module, erro
 
 		// Handle abbrevations.
 		camelCaseName := camelCase(goName)
-		elmName := strings.ToLower(camelCaseName[0:1]) + camelCaseName[1:]
+		elmName := strings.ToLower(camelCaseName[:1]) + camelCaseName[1:]
 		elmType := elmType(goType)
 		fields = append(fields, &Field{
 			JSONName: jsonName,
@@ -77,5 +77,7 @@ func moduleFromStruct(structDef *types.Struct, moduleName string) (*Module, erro
 		})
 	}
 
+	camelCaseName := camelCase(typeName)
+	moduleName := strings.ToUpper(camelCaseName[:1]) + camelCaseName[1:]
 	return &Module{Name: moduleName, Fields: fields}, nil
 }

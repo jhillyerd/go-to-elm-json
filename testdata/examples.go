@@ -10,6 +10,11 @@ type AnInterface interface {
 // Empty is a struct with no fields.
 type Empty struct{}
 
+// JSONObject contains an abbreviation in its name.
+type JSONObject struct {
+	Value string
+}
+
 // Strings is a struct of strings.
 type Strings struct {
 	ExportedBareString     string

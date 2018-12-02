@@ -6,7 +6,14 @@ import "strings"
 // then alphabetically for ease of updating.
 var abbreviations = []string{
 	"HTML",
+	"HTTP",
+	"IMAP",
 	"JSON",
+	"POP3",
+	"REST",
+	"SMTP",
+	"URI",
+	"URL",
 	"WWW",
 	"XML",
 	"GB",

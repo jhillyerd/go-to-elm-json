@@ -37,6 +37,28 @@ func TestModuleFromStructErrors(t *testing.T) {
 	}
 }
 
+func TestModuleFromStructAbbrev(t *testing.T) {
+	prog, _, err := progFromArgs([]string{examples})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	input := "JSONObject"
+	want := "JsonObject"
+	structType, err := structFromProg(prog, "main", input)
+	if err != nil {
+		t.Fatalf("%+v", err)
+	}
+	module, err := moduleFromStruct(structType, input)
+	if err != nil {
+		t.Fatalf("%+v", err)
+	}
+	got := module.Name
+	if got != want {
+		t.Errorf("Got module name %q, want %q", got, want)
+	}
+}
+
 func TestModuleFromStructNameConversions(t *testing.T) {
 	prog, _, err := progFromArgs([]string{examples})
 	if err != nil {
