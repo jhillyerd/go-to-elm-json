@@ -1,10 +1,11 @@
 package main
 
-var elmTemplate = `module {{.Name}} exposing ({{.Name}})
+var elmTemplate = `module {{.Name}} exposing ({{.Name}}, decoder, encode)
 
 import Json.Decode as D
 import Json.Decode.Pipeline as P
 import Json.Encode as E
+
 
 type alias {{.Name}} =
 {{- range $index, $el := .Fields }}
@@ -19,6 +20,7 @@ decoder =
 {{- range .Fields }}
         |> P.required "{{ .JSONName }}" {{ .ElmType.Codec "D" -}}
 {{end}}
+
 
 encode : {{.Name}} -> E.Value
 encode r =
