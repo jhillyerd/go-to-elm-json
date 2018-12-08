@@ -46,17 +46,18 @@ func main() {
 	}
 }
 
-// progFromArgs takes an x/tools/go/loader argument string and parses the specified Go files.
-func progFromArgs(args []string) (*loader.Program, []string, error) {
+// progFromArgs takes an x/tools/go/loader argument string and parses the specified Go files,
+// leaving remaining arguments in rest.
+func progFromArgs(args []string) (prog *loader.Program, rest []string, err error) {
 	// Configure type checker.
 	var conf loader.Config
-	rest, err := conf.FromArgs(args, false)
+	rest, err = conf.FromArgs(args, false)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	// Load Go package.
-	prog, err := conf.Load()
+	prog, err = conf.Load()
 	if err != nil {
 		return nil, nil, err
 	}

@@ -2,15 +2,39 @@ package main
 
 import (
 	"strings"
+	"sync"
 	"testing"
 
 	"github.com/go-test/deep"
+	"golang.org/x/tools/go/loader"
 )
+
+type programCache struct {
+	sync.Mutex
+	loadedProgs map[string]*loader.Program
+}
+
+func (p *programCache) load(path string) (prog *loader.Program, err error) {
+	p.Lock()
+	defer p.Unlock()
+	if p.loadedProgs == nil {
+		p.loadedProgs = make(map[string]*loader.Program)
+	}
+	prog = p.loadedProgs[path]
+	if prog != nil {
+		return prog, nil
+	}
+	prog, _, err = progFromArgs([]string{path})
+	p.loadedProgs[path] = prog
+	return prog, err
+}
+
+var programs = &programCache{}
 
 const examples = "testdata/examples.go"
 
 func TestRecordFromStructErrors(t *testing.T) {
-	prog, _, err := progFromArgs([]string{examples})
+	prog, err := programs.load(examples)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -38,7 +62,7 @@ func TestRecordFromStructErrors(t *testing.T) {
 }
 
 func TestRecordFromStructAbbrev(t *testing.T) {
-	prog, _, err := progFromArgs([]string{examples})
+	prog, err := programs.load(examples)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -60,7 +84,7 @@ func TestRecordFromStructAbbrev(t *testing.T) {
 }
 
 func TestRecordFromStructNameConversions(t *testing.T) {
-	prog, _, err := progFromArgs([]string{examples})
+	prog, err := programs.load(examples)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -103,7 +127,7 @@ func TestRecordFromStructNameConversions(t *testing.T) {
 }
 
 func TestParseStructMultipleNames(t *testing.T) {
-	prog, _, err := progFromArgs([]string{examples})
+	prog, err := programs.load(examples)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -146,7 +170,7 @@ func TestParseStructMultipleNames(t *testing.T) {
 }
 
 func TestRecordFromStructTypeConversions(t *testing.T) {
-	prog, _, err := progFromArgs([]string{examples})
+	prog, err := programs.load(examples)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -199,7 +223,7 @@ func TestRecordFromStructTypeConversions(t *testing.T) {
 }
 
 func TestRecordFromStructSlices(t *testing.T) {
-	prog, _, err := progFromArgs([]string{examples})
+	prog, err := programs.load(examples)
 	if err != nil {
 		t.Fatal(err)
 	}
