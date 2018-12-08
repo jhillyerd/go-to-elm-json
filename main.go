@@ -36,11 +36,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("%+v", err)
 	}
-	module, err := moduleFromStruct(structType, objectName)
+	record, err := recordFromStruct(structType, objectName)
 	if err != nil {
 		log.Fatalf("%+v", err)
 	}
-	err = tmpl.Execute(os.Stdout, module)
+	err = tmpl.Execute(os.Stdout, record)
 	if err != nil {
 		log.Fatalf("%+v", err)
 	}

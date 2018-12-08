@@ -9,7 +9,7 @@ import (
 
 const examples = "testdata/examples.go"
 
-func TestModuleFromStructErrors(t *testing.T) {
+func TestRecordFromStructErrors(t *testing.T) {
 	prog, _, err := progFromArgs([]string{examples})
 	if err != nil {
 		t.Fatal(err)
@@ -27,17 +27,17 @@ func TestModuleFromStructErrors(t *testing.T) {
 	for _, tt := range tests {
 		structType, err := structFromProg(prog, "main", tt.name)
 		if err == nil {
-			_, err = moduleFromStruct(structType, tt.name)
+			_, err = recordFromStruct(structType, tt.name)
 		}
 		got := err != nil
 		if got != tt.errorExpected {
-			t.Errorf("moduleFromStruct(%q): got error %v, want error %v\nerror was: %v",
+			t.Errorf("recordFromStruct(%q): got error %v, want error %v\nerror was: %v",
 				tt.name, got, tt.errorExpected, err)
 		}
 	}
 }
 
-func TestModuleFromStructAbbrev(t *testing.T) {
+func TestRecordFromStructAbbrev(t *testing.T) {
 	prog, _, err := progFromArgs([]string{examples})
 	if err != nil {
 		t.Fatal(err)
@@ -49,26 +49,26 @@ func TestModuleFromStructAbbrev(t *testing.T) {
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
-	module, err := moduleFromStruct(structType, input)
+	record, err := recordFromStruct(structType, input)
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
-	got := module.Name
+	got := record.Name()
 	if got != want {
-		t.Errorf("Got module name %q, want %q", got, want)
+		t.Errorf("Got record name %q, want %q", got, want)
 	}
 }
 
-func TestModuleFromStructNameConversions(t *testing.T) {
+func TestRecordFromStructNameConversions(t *testing.T) {
 	prog, _, err := progFromArgs([]string{examples})
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	name := "Strings"
-	want := &Module{
-		Name: name,
-		Fields: []*Field{
+	want := &ElmRecord{
+		name: name,
+		Fields: []*ElmField{
 			{
 				JSONName: "ExportedBareString",
 				ElmName:  "exportedBareString",
@@ -90,15 +90,15 @@ func TestModuleFromStructNameConversions(t *testing.T) {
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
-	got, err := moduleFromStruct(structType, name)
+	got, err := recordFromStruct(structType, name)
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
 	if diff := deep.Equal(got, want); diff != nil {
-		t.Fatal("Module struct did not match expectations:\n" + strings.Join(diff, "\n"))
+		t.Fatal("ElmRecord struct did not match expectations:\n" + strings.Join(diff, "\n"))
 	}
 	if !got.Equal(want) {
-		t.Error("Module struct did not match expectations, likely in an ElmType field.")
+		t.Error("ElmRecord struct did not match expectations, likely in an ElmType field.")
 	}
 }
 
@@ -109,9 +109,9 @@ func TestParseStructMultipleNames(t *testing.T) {
 	}
 
 	name := "MultiNames"
-	want := &Module{
-		Name: name,
-		Fields: []*Field{
+	want := &ElmRecord{
+		name: name,
+		Fields: []*ElmField{
 			{
 				JSONName: "One",
 				ElmName:  "one",
@@ -133,28 +133,28 @@ func TestParseStructMultipleNames(t *testing.T) {
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
-	got, err := moduleFromStruct(structType, name)
+	got, err := recordFromStruct(structType, name)
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
 	if diff := deep.Equal(got, want); diff != nil {
-		t.Fatal("Module struct did not match expectations:\n" + strings.Join(diff, "\n"))
+		t.Fatal("ElmRecord struct did not match expectations:\n" + strings.Join(diff, "\n"))
 	}
 	if !got.Equal(want) {
-		t.Error("Module struct did not match expectations, likely in an ElmType field.")
+		t.Error("ElmRecord struct did not match expectations, likely in an ElmType field.")
 	}
 }
 
-func TestModuleFromStructTypeConversions(t *testing.T) {
+func TestRecordFromStructTypeConversions(t *testing.T) {
 	prog, _, err := progFromArgs([]string{examples})
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	name := "OtherTypes"
-	want := &Module{
-		Name: name,
-		Fields: []*Field{
+	want := &ElmRecord{
+		name: name,
+		Fields: []*ElmField{
 			{
 				JSONName: "AnInteger",
 				ElmName:  "anInteger",
@@ -186,42 +186,42 @@ func TestModuleFromStructTypeConversions(t *testing.T) {
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
-	got, err := moduleFromStruct(structType, name)
+	got, err := recordFromStruct(structType, name)
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
 	if diff := deep.Equal(got, want); diff != nil {
-		t.Fatal("Module struct did not match expectations:\n" + strings.Join(diff, "\n"))
+		t.Fatal("ElmRecord struct did not match expectations:\n" + strings.Join(diff, "\n"))
 	}
 	if !got.Equal(want) {
-		t.Error("Module struct did not match expectations, likely in an ElmType field.")
+		t.Error("ElmRecord struct did not match expectations, likely in an ElmType field.")
 	}
 }
 
-func TestModuleFromStructSlices(t *testing.T) {
+func TestRecordFromStructSlices(t *testing.T) {
 	prog, _, err := progFromArgs([]string{examples})
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	name := "SliceTypes"
-	want := &Module{
-		Name: name,
-		Fields: []*Field{
+	want := &ElmRecord{
+		name: name,
+		Fields: []*ElmField{
 			{
 				JSONName: "Bools",
 				ElmName:  "bools",
-				ElmType:  &ElmListType{elem: elmBool},
+				ElmType:  &ElmList{elem: elmBool},
 			},
 			{
 				JSONName: "Floats",
 				ElmName:  "floats",
-				ElmType:  &ElmListType{elem: elmFloat},
+				ElmType:  &ElmList{elem: elmFloat},
 			},
 			{
 				JSONName: "Strings",
 				ElmName:  "strings",
-				ElmType:  &ElmListType{elem: elmString},
+				ElmType:  &ElmList{elem: elmString},
 			},
 		},
 	}
@@ -229,14 +229,14 @@ func TestModuleFromStructSlices(t *testing.T) {
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
-	got, err := moduleFromStruct(structType, name)
+	got, err := recordFromStruct(structType, name)
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
 	if diff := deep.Equal(got, want); diff != nil {
-		t.Fatal("Module struct did not match expectations:\n" + strings.Join(diff, "\n"))
+		t.Fatal("ElmRecord struct did not match expectations:\n" + strings.Join(diff, "\n"))
 	}
 	if !got.Equal(want) {
-		t.Error("Module struct did not match expectations, likely in an ElmType field.")
+		t.Error("ElmRecord struct did not match expectations, likely in an ElmType field.")
 	}
 }

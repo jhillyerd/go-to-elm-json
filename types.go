@@ -34,24 +34,24 @@ func (t *ElmBasicType) Equal(other ElmType) bool {
 	return false
 }
 
-// ElmListType represents a list of another type.
-type ElmListType struct {
+// ElmList represents a list of another type.
+type ElmList struct {
 	elem ElmType
 }
 
 // Name returns the name of the Elm type.
-func (t *ElmListType) Name() string {
+func (t *ElmList) Name() string {
 	return "List " + t.elem.Name()
 }
 
 // Codec returns the name of the Elm JSON encoder/decoder for this type.
-func (t *ElmListType) Codec(prefix string) string {
+func (t *ElmList) Codec(prefix string) string {
 	return "(" + prefix + ".list " + t.elem.Codec(prefix) + ")"
 }
 
 // Equal tests for equality with another ElmType.
-func (t *ElmListType) Equal(other ElmType) bool {
-	if o, ok := other.(*ElmListType); ok {
+func (t *ElmList) Equal(other ElmType) bool {
+	if o, ok := other.(*ElmList); ok {
 		return t.elem.Equal(o.elem)
 	}
 	return false
@@ -80,7 +80,7 @@ func elmType(goType types.Type) ElmType {
 			return elmString
 		}
 	case *types.Slice:
-		return &ElmListType{elem: elmType(t.Elem())}
+		return &ElmList{elem: elmType(t.Elem())}
 	}
 	return nil
 }

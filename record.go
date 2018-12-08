@@ -7,50 +7,63 @@ import (
 	"github.com/pkg/errors"
 )
 
-// Module represents an Elm module.
-type Module struct {
-	Name   string
-	Fields []*Field
+// ElmRecord represents an Elm record.
+type ElmRecord struct {
+	name   string
+	Fields []*ElmField
 }
 
-// Equal tests for equality with another Module.
-func (m *Module) Equal(o *Module) bool {
-	if m.Name != o.Name {
-		return false
-	}
-	if len(m.Fields) != len(o.Fields) {
-		return false
-	}
-	for i, f := range m.Fields {
-		if !f.Equal(o.Fields[i]) {
+// Name of this record type.
+func (r *ElmRecord) Name() string {
+	return r.name
+}
+
+// Codec for this record type.
+func (r *ElmRecord) Codec(prefix string) string {
+	return "dunno"
+}
+
+// Equal tests for equality with another ElmType.
+func (r *ElmRecord) Equal(other ElmType) bool {
+	if o, ok := other.(*ElmRecord); ok {
+		if r.name != o.name {
 			return false
 		}
+		if len(r.Fields) != len(o.Fields) {
+			return false
+		}
+		for i, f := range r.Fields {
+			if !f.Equal(o.Fields[i]) {
+				return false
+			}
+		}
+		return true
 	}
-	return true
+	return false
 }
 
-// Field represents a Go -> JSON -> Elm field.
-type Field struct {
+// ElmField represents an Elm record field.
+type ElmField struct {
 	JSONName string
 	ElmName  string
 	ElmType  ElmType
 }
 
 // Equal test for equality with another field.
-func (f *Field) Equal(o *Field) bool {
+func (f *ElmField) Equal(o *ElmField) bool {
 	return f.JSONName == o.JSONName &&
 		f.ElmName == o.ElmName &&
 		f.ElmType.Equal(o.ElmType)
 }
 
-func moduleFromStruct(structDef *types.Struct, typeName string) (*Module, error) {
+func recordFromStruct(structDef *types.Struct, typeName string) (*ElmRecord, error) {
 	count := structDef.NumFields()
 	if count == 0 {
 		return nil, errors.Errorf("struct %v had no fields", typeName)
 	}
 
 	// Convert to our field type.
-	var fields []*Field
+	var fields []*ElmField
 	for i := 0; i < structDef.NumFields(); i++ {
 		sfield := structDef.Field(i)
 		stag := structDef.Tag(i)
@@ -70,7 +83,7 @@ func moduleFromStruct(structDef *types.Struct, typeName string) (*Module, error)
 		camelCaseName := camelCase(goName)
 		elmName := strings.ToLower(camelCaseName[:1]) + camelCaseName[1:]
 		elmType := elmType(goType)
-		fields = append(fields, &Field{
+		fields = append(fields, &ElmField{
 			JSONName: jsonName,
 			ElmName:  elmName,
 			ElmType:  elmType,
@@ -78,6 +91,6 @@ func moduleFromStruct(structDef *types.Struct, typeName string) (*Module, error)
 	}
 
 	camelCaseName := camelCase(typeName)
-	moduleName := strings.ToUpper(camelCaseName[:1]) + camelCaseName[1:]
-	return &Module{Name: moduleName, Fields: fields}, nil
+	name := strings.ToUpper(camelCaseName[:1]) + camelCaseName[1:]
+	return &ElmRecord{name: name, Fields: fields}, nil
 }
