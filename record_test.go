@@ -319,6 +319,65 @@ func TestRecordFromStructOptionals(t *testing.T) {
 	}
 }
 
+func TestRecordFromStructNullables(t *testing.T) {
+	prog, err := programs.load(examples)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	name := "NullableValues"
+	innerType := &ElmRecord{
+		name: "InnerStruct",
+		Fields: []*ElmField{
+			{
+				JSONName: "Value",
+				ElmName:  "value",
+				ElmType:  elmString,
+			},
+		},
+	}
+	want := &ElmRecord{
+		name: name,
+		Fields: []*ElmField{
+			{
+				JSONName: "NullString",
+				ElmName:  "nullString",
+				ElmType:  &ElmPointer{elem: elmString},
+			},
+			{
+				JSONName: "OptNullString",
+				ElmName:  "optNullString",
+				ElmType:  &ElmPointer{elem: elmString},
+				Optional: true,
+			},
+			{
+				JSONName: "NullInt",
+				ElmName:  "nullInt",
+				ElmType:  &ElmPointer{elem: elmInt},
+			},
+			{
+				JSONName: "NullStruct",
+				ElmName:  "nullStruct",
+				ElmType:  &ElmPointer{elem: innerType},
+			},
+		},
+	}
+	structType, err := structFromProg(prog, "main", name)
+	if err != nil {
+		t.Fatalf("%+v", err)
+	}
+	got, err := recordFromStruct(NewResolver(), structType, name)
+	if err != nil {
+		t.Fatalf("%+v", err)
+	}
+	if diff := deep.Equal(got, want); diff != nil {
+		t.Fatal("ElmRecord struct did not match expectations:\n" + strings.Join(diff, "\n"))
+	}
+	if !got.Equal(want) {
+		t.Error("ElmRecord struct did not match expectations, likely in an ElmType field.")
+	}
+}
+
 func TestRecordFromStructNested(t *testing.T) {
 	prog, err := programs.load(examples)
 	if err != nil {

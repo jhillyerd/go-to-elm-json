@@ -5,6 +5,8 @@ A tool to create Elm JSON decoder pipelines from Go struct type definitions.
 
 ## Status
 
+Useful, but not feature complete.
+
 - [x] Support basic types: string, int, float, bool
 - [x] CamelCase common acronyms
 - [x] Generate Elm record
@@ -13,11 +15,12 @@ A tool to create Elm JSON decoder pipelines from Go struct type definitions.
 - [x] Usage example in README
 - [x] Support slice form of basic types
 - [x] Support for optional fields
-- [ ] Support for string-keyed basic type maps
 - [x] Support nested structs
+- [x] Support nullable pointer types
 - [ ] Allow records to be renamed
 - [ ] Handle `json:"-"` correctly
-- [ ] Support nullable pointer types
+- [ ] Specify module name
+- [ ] Support for string-keyed basic type maps
 
 
 ## Install

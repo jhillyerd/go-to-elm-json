@@ -52,6 +52,11 @@ func (r *ElmRecord) Equal(other ElmType) bool {
 	return false
 }
 
+// Nullable indicates whether this type can be nil.
+func (r *ElmRecord) Nullable() bool {
+	return false
+}
+
 // ElmField represents an Elm record field.
 type ElmField struct {
 	JSONName string
@@ -62,7 +67,7 @@ type ElmField struct {
 
 // Decoder returns the Elm JSON decoder for this field.
 func (f *ElmField) Decoder(prefix string) string {
-	if f.Optional {
+	if f.Optional || f.ElmType.Nullable() {
 		return "(" + prefix + ".nullable " + f.ElmType.Decoder(prefix) + ")"
 	}
 	return f.ElmType.Decoder(prefix)
@@ -78,7 +83,7 @@ func (f *ElmField) Default() string {
 
 // Encoder reutrns the Elm JSON encoder for this field.
 func (f *ElmField) Encoder(prefix string) string {
-	if f.Optional {
+	if f.Optional || f.ElmType.Nullable() {
 		return "maybe " + f.ElmType.Encoder(prefix)
 	}
 	return f.ElmType.Encoder(prefix)
@@ -94,8 +99,8 @@ func (f *ElmField) Pipeline(prefix string) string {
 
 // TypeDecl returns the type in Elm source format.
 func (f *ElmField) TypeDecl() string {
-	if f.Optional {
-		return "Maybe " + f.ElmType.Name()
+	if f.Optional || f.ElmType.Nullable() {
+		return "Maybe " + precedence(f.ElmType.Name())
 	}
 	return f.ElmType.Name()
 }
