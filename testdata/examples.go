@@ -59,6 +59,14 @@ type OptionalValues struct {
 	OptBool   bool   `json:",omitempty"`
 }
 
+// NullableValues can be set to null.
+type NullableValues struct {
+	NullString    *string
+	OptNullString *string `json:",omitempty"`
+	NullInt       *int
+	NullStruct    *innerStruct
+}
+
 type innerStruct struct {
 	Value string
 }

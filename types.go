@@ -6,6 +6,13 @@ import (
 	"github.com/pkg/errors"
 )
 
+var (
+	elmBool   = &ElmBasicType{name: "Bool", codec: "bool"}
+	elmFloat  = &ElmBasicType{name: "Float", codec: "float"}
+	elmInt    = &ElmBasicType{name: "Int", codec: "int"}
+	elmString = &ElmBasicType{name: "String", codec: "string"}
+)
+
 // ElmType represents a type in Elm.
 type ElmType interface {
 	Name() string
@@ -90,12 +97,38 @@ func (t *ElmList) Nullable() bool {
 	return true
 }
 
-var (
-	elmBool   = &ElmBasicType{name: "Bool", codec: "bool"}
-	elmFloat  = &ElmBasicType{name: "Float", codec: "float"}
-	elmInt    = &ElmBasicType{name: "Int", codec: "int"}
-	elmString = &ElmBasicType{name: "String", codec: "string"}
-)
+// ElmPointer represents a pointer to an instance of another type.
+type ElmPointer struct {
+	elem ElmType
+}
+
+// Name returns the name of the Elm type.
+func (t *ElmPointer) Name() string {
+	return t.elem.Name()
+}
+
+// Decoder returns the name of the Elm JSON encoder/decoder for this type.
+func (t *ElmPointer) Decoder(prefix string) string {
+	return t.elem.Decoder(prefix)
+}
+
+// Encoder returns the name of the Elm JSON encoder/decoder for this type.
+func (t *ElmPointer) Encoder(prefix string) string {
+	return t.elem.Encoder(prefix)
+}
+
+// Equal tests for equality with another ElmType.
+func (t *ElmPointer) Equal(other ElmType) bool {
+	if o, ok := other.(*ElmPointer); ok {
+		return t.elem.Equal(o.elem)
+	}
+	return false
+}
+
+// Nullable indicates whether this type can be nil.
+func (t *ElmPointer) Nullable() bool {
+	return true
+}
 
 // ElmTypeResolver maintains a cache of Go to Elm type conversions.
 type ElmTypeResolver struct {
@@ -125,6 +158,12 @@ func (r *ElmTypeResolver) Convert(goType types.Type) (ElmType, error) {
 		case types.String:
 			return elmString, nil
 		}
+	case *types.Pointer:
+		elemType, err := r.Convert(t.Elem())
+		if err != nil {
+			return nil, err
+		}
+		return &ElmPointer{elem: elemType}, nil
 	case *types.Slice:
 		elemType, err := r.Convert(t.Elem())
 		if err != nil {

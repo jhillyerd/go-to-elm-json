@@ -21,6 +21,7 @@ func TestMainOutput(t *testing.T) {
 		{"SliceTypes", "slicetypes.golden"},
 		{"NestedStructs", "nestedstructs.golden"},
 		{"OptionalValues", "optionalvalues.golden"},
+		{"NullableValues", "nullablevalues.golden"},
 	}
 
 	buf := &bytes.Buffer{}

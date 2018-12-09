@@ -15,12 +15,12 @@ Useful, but not feature complete.
 - [x] Usage example in README
 - [x] Support slice form of basic types
 - [x] Support for optional fields
-- [ ] Support for string-keyed basic type maps
 - [x] Support nested structs
+- [x] Support nullable pointer types
 - [ ] Allow records to be renamed
 - [ ] Handle `json:"-"` correctly
-- [ ] Support nullable pointer types
 - [ ] Specify module name
+- [ ] Support for string-keyed basic type maps
 
 
 ## Install
