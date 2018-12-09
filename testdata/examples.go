@@ -20,6 +20,7 @@ type Strings struct {
 	ExportedBareString     string
 	ExportedTaggedString   string `json:"exported-tagged-string"`
 	ExportedOptionalString string `json:"exported-optional-string,omitempty"`
+	AnotherOptionalString  string `json:",omitempty"`
 	internalBareString     string
 }
 

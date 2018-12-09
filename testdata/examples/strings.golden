@@ -12,6 +12,7 @@ type alias Strings =
     { exportedBareString : String
     , exportedTaggedString : String
     , exportedOptionalString : String
+    , anotherOptionalString : String
     }
 
 
@@ -21,6 +22,7 @@ decoder =
         |> P.required "ExportedBareString" D.string
         |> P.required "exported-tagged-string" D.string
         |> P.required "exported-optional-string" D.string
+        |> P.required "AnotherOptionalString" D.string
 
 
 encode : Strings -> E.Value
@@ -29,4 +31,5 @@ encode r =
         [ ("ExportedBareString", E.string r.exportedBareString)
         , ("exported-tagged-string", E.string r.exportedTaggedString)
         , ("exported-optional-string", E.string r.exportedOptionalString)
+        , ("AnotherOptionalString", E.string r.anotherOptionalString)
         ]

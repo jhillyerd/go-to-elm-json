@@ -108,6 +108,11 @@ func TestRecordFromStructNameConversions(t *testing.T) {
 				ElmName:  "exportedOptionalString",
 				ElmType:  elmString,
 			},
+			{
+				JSONName: "AnotherOptionalString",
+				ElmName:  "anotherOptionalString",
+				ElmType:  elmString,
+			},
 		},
 	}
 	structType, err := structFromProg(prog, "main", name)

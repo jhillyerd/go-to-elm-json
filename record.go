@@ -89,7 +89,9 @@ func recordFromStruct(resolver *ElmTypeResolver, structDef *types.Struct, typeNa
 		jsonName := goName
 		if len(stag) > 2 {
 			tagName, _ := parseTag(stag)
-			jsonName = tagName
+			if tagName != "" {
+				jsonName = tagName
+			}
 		}
 
 		// Handle abbrevations.

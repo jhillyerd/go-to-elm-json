@@ -16,6 +16,7 @@ A tool to create Elm JSON decoder pipelines from Go struct type definitions.
 - [ ] Support for string-keyed basic type maps
 - [x] Support nested structs
 - [ ] Allow records to be renamed
+- [ ] Handle `json:"-"` correctly
 
 
 ## Install
