@@ -1,0 +1,29 @@
+module Strings exposing (Strings, decoder, encode)
+
+import Json.Decode as D
+import Json.Decode.Pipeline as P
+import Json.Encode as E
+
+
+type alias Strings =
+    { exportedBareString : String
+    , exportedTaggedString : String
+    , exportedOptionalString : String
+    }
+
+
+decoder : D.Decoder Strings
+decoder =
+    D.succeed Strings
+        |> P.required "ExportedBareString" D.string
+        |> P.required "exported-tagged-string" D.string
+        |> P.required "exported-optional-string" D.string
+
+
+encode : Strings -> E.Value
+encode r =
+    E.object
+        [ ("ExportedBareString", E.string r.exportedBareString)
+        , ("exported-tagged-string", E.string r.exportedTaggedString)
+        , ("exported-optional-string", E.string r.exportedOptionalString)
+        ]

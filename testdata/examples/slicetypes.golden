@@ -1,0 +1,29 @@
+module SliceTypes exposing (SliceTypes, decoder, encode)
+
+import Json.Decode as D
+import Json.Decode.Pipeline as P
+import Json.Encode as E
+
+
+type alias SliceTypes =
+    { bools : List Bool
+    , floats : List Float
+    , strings : List String
+    }
+
+
+decoder : D.Decoder SliceTypes
+decoder =
+    D.succeed SliceTypes
+        |> P.required "Bools" (D.list D.bool)
+        |> P.required "Floats" (D.list D.float)
+        |> P.required "Strings" (D.list D.string)
+
+
+encode : SliceTypes -> E.Value
+encode r =
+    E.object
+        [ ("Bools", (E.list E.bool) r.bools)
+        , ("Floats", (E.list E.float) r.floats)
+        , ("Strings", (E.list E.string) r.strings)
+        ]

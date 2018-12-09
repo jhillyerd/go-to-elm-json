@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"go/types"
+	"io"
 	"os"
 	"text/template"
 
@@ -14,11 +15,6 @@ import (
 var logger = zerolog.New(zerolog.ConsoleWriter{Out: os.Stderr}).With().Timestamp().Logger()
 
 func main() {
-	// Load output template.
-	tmpl, err := template.New("elm").Parse(elmTemplate)
-	if err != nil {
-		logger.Fatal().Err(err).Msg("Couldn't parse template")
-	}
 
 	// Parse Go.
 	prog, rest, err := progFromArgs(os.Args[1:])
@@ -33,20 +29,35 @@ func main() {
 	packageName := rest[0]
 	objectName := rest[1]
 
+	err = generateElm(os.Stdout, prog, packageName, objectName)
+	if err != nil {
+		logger.Fatal().Err(err).Msg("Generation failed")
+	}
+}
+
+// generateElm processes the provided program and outputs Elm code to the provider writer.
+func generateElm(w io.Writer, prog *loader.Program, packageName string, objectName string) error {
+	// Load output template.
+	tmpl, err := template.New("elm").Parse(elmTemplate)
+	if err != nil {
+		return errors.Wrap(err, "Couldn't parse template")
+	}
+
 	// Process definition.
-	resolver := NewResolver()
 	structType, err := structFromProg(prog, packageName, objectName)
 	if err != nil {
-		logger.Fatal().Err(err).Msg("Couldn't find struct")
+		return errors.Wrap(err, "Couldn't find struct")
 	}
+	resolver := NewResolver()
 	record, err := recordFromStruct(resolver, structType, objectName)
 	if err != nil {
-		logger.Fatal().Err(err).Msg("Couldn't convert struct")
+		return errors.Wrap(err, "Couldn't convert struct")
 	}
-	err = tmpl.Execute(os.Stdout, record)
+	err = tmpl.Execute(w, record)
 	if err != nil {
-		logger.Fatal().Err(err).Msg("Couldn't render template")
+		return errors.Wrap(err, "Couldn't render template")
 	}
+	return nil
 }
 
 // progFromArgs takes an x/tools/go/loader argument string and parses the specified Go files,

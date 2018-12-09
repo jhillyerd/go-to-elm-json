@@ -1,0 +1,35 @@
+module OtherTypes exposing (OtherTypes, decoder, encode)
+
+import Json.Decode as D
+import Json.Decode.Pipeline as P
+import Json.Encode as E
+
+
+type alias OtherTypes =
+    { anInteger : Int
+    , bigInteger : Int
+    , aFloat : Float
+    , bigFloat : Float
+    , noNoNo : Bool
+    }
+
+
+decoder : D.Decoder OtherTypes
+decoder =
+    D.succeed OtherTypes
+        |> P.required "AnInteger" D.int
+        |> P.required "BigInteger" D.int
+        |> P.required "AFloat" D.float
+        |> P.required "BigFloat" D.float
+        |> P.required "NoNoNo" D.bool
+
+
+encode : OtherTypes -> E.Value
+encode r =
+    E.object
+        [ ("AnInteger", E.int r.anInteger)
+        , ("BigInteger", E.int r.bigInteger)
+        , ("AFloat", E.float r.aFloat)
+        , ("BigFloat", E.float r.bigFloat)
+        , ("NoNoNo", E.bool r.noNoNo)
+        ]
