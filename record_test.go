@@ -51,7 +51,7 @@ func TestRecordFromStructErrors(t *testing.T) {
 	for _, tt := range tests {
 		structType, err := structFromProg(prog, "main", tt.name)
 		if err == nil {
-			_, err = recordFromStruct(structType, tt.name)
+			_, err = recordFromStruct(NewResolver(), structType, tt.name)
 		}
 		got := err != nil
 		if got != tt.errorExpected {
@@ -73,7 +73,7 @@ func TestRecordFromStructAbbrev(t *testing.T) {
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
-	record, err := recordFromStruct(structType, input)
+	record, err := recordFromStruct(NewResolver(), structType, input)
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
@@ -114,7 +114,7 @@ func TestRecordFromStructNameConversions(t *testing.T) {
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
-	got, err := recordFromStruct(structType, name)
+	got, err := recordFromStruct(NewResolver(), structType, name)
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
@@ -157,7 +157,7 @@ func TestParseStructMultipleNames(t *testing.T) {
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
-	got, err := recordFromStruct(structType, name)
+	got, err := recordFromStruct(NewResolver(), structType, name)
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
@@ -210,7 +210,7 @@ func TestRecordFromStructTypeConversions(t *testing.T) {
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
-	got, err := recordFromStruct(structType, name)
+	got, err := recordFromStruct(NewResolver(), structType, name)
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
@@ -253,13 +253,77 @@ func TestRecordFromStructSlices(t *testing.T) {
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
-	got, err := recordFromStruct(structType, name)
+	got, err := recordFromStruct(NewResolver(), structType, name)
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
 	if diff := deep.Equal(got, want); diff != nil {
 		t.Fatal("ElmRecord struct did not match expectations:\n" + strings.Join(diff, "\n"))
 	}
+	if !got.Equal(want) {
+		t.Error("ElmRecord struct did not match expectations, likely in an ElmType field.")
+	}
+}
+
+func TestRecordFromStructNested(t *testing.T) {
+	prog, err := programs.load(examples)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	name := "NestedStructs"
+	innerType := &ElmRecord{
+		name: "InnerStruct",
+		Fields: []*ElmField{
+			{
+				JSONName: "Value",
+				ElmName:  "value",
+				ElmType:  elmString,
+			},
+		},
+	}
+
+	want := &ElmRecord{
+		name: name,
+		Fields: []*ElmField{
+			{
+				JSONName: "OuterName",
+				ElmName:  "outerName",
+				ElmType:  elmString,
+			},
+			{
+				JSONName: "InnerValue1",
+				ElmName:  "innerValue1",
+				ElmType:  innerType,
+			},
+			{
+				JSONName: "InnerValue2",
+				ElmName:  "innerValue2",
+				ElmType:  innerType,
+			},
+		},
+	}
+	structType, err := structFromProg(prog, "main", name)
+	if err != nil {
+		t.Fatalf("%+v", err)
+	}
+	got, err := recordFromStruct(NewResolver(), structType, name)
+	if err != nil {
+		t.Fatalf("%+v", err)
+	}
+	if diff := deep.Equal(got, want); diff != nil {
+		t.Fatal("ElmRecord struct did not match expectations:\n" + strings.Join(diff, "\n"))
+	}
+	if innerRecord, ok := got.Fields[1].ElmType.(*ElmRecord); ok {
+		t.Logf("innerRecord: %#v", innerRecord)
+		for i, f := range innerRecord.Fields {
+			t.Logf("innerRecord[%v]: %#v", i, f)
+			t.Logf("innerRecord[%v].ElmType: %s", i, f.ElmType.Name())
+		}
+	} else {
+		t.Errorf("Fields[1].ElmType was %T, not *ElmRecord", got.Fields[1].ElmType)
+	}
+
 	if !got.Equal(want) {
 		t.Error("ElmRecord struct did not match expectations, likely in an ElmType field.")
 	}

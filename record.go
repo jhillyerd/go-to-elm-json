@@ -53,14 +53,17 @@ type ElmField struct {
 func (f *ElmField) Equal(o *ElmField) bool {
 	return f.JSONName == o.JSONName &&
 		f.ElmName == o.ElmName &&
+		f.ElmType != nil &&
 		f.ElmType.Equal(o.ElmType)
 }
 
-func recordFromStruct(structDef *types.Struct, typeName string) (*ElmRecord, error) {
+func recordFromStruct(resolver *ElmTypeResolver, structDef *types.Struct, typeName string) (*ElmRecord, error) {
 	count := structDef.NumFields()
 	if count == 0 {
 		return nil, errors.Errorf("struct %v had no fields", typeName)
 	}
+	camelCaseName := camelCase(typeName)
+	recordName := strings.ToUpper(camelCaseName[:1]) + camelCaseName[1:]
 
 	// Convert to our field type.
 	var fields []*ElmField
@@ -82,7 +85,15 @@ func recordFromStruct(structDef *types.Struct, typeName string) (*ElmRecord, err
 		// Handle abbrevations.
 		camelCaseName := camelCase(goName)
 		elmName := strings.ToLower(camelCaseName[:1]) + camelCaseName[1:]
-		elmType := elmType(goType)
+		elmType, err := resolver.Convert(goType)
+		if err != nil {
+			return nil, err
+		}
+		logger.Debug().
+			Str("field", recordName+":"+jsonName).
+			Str("goType", goType.String()).
+			Str("elmType", elmTypeName(elmType)).
+			Msg("Type conversion")
 		fields = append(fields, &ElmField{
 			JSONName: jsonName,
 			ElmName:  elmName,
@@ -90,7 +101,5 @@ func recordFromStruct(structDef *types.Struct, typeName string) (*ElmRecord, err
 		})
 	}
 
-	camelCaseName := camelCase(typeName)
-	name := strings.ToUpper(camelCaseName[:1]) + camelCaseName[1:]
-	return &ElmRecord{name: name, Fields: fields}, nil
+	return &ElmRecord{name: recordName, Fields: fields}, nil
 }

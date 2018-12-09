@@ -44,6 +44,17 @@ type SliceTypes struct {
 	Strings []string
 }
 
+// NestedStructs defines a nested struct.
+type NestedStructs struct {
+	OuterName   string
+	InnerValue1 innerStruct
+	InnerValue2 innerStruct
+}
+
+type innerStruct struct {
+	Value string
+}
+
 func main() {
 	fmt.Printf("Hello world!\n")
 }

@@ -3,25 +3,27 @@ package main
 import (
 	"fmt"
 	"go/types"
-	"log"
 	"os"
 	"text/template"
 
 	"github.com/pkg/errors"
+	"github.com/rs/zerolog"
 	"golang.org/x/tools/go/loader"
 )
+
+var logger = zerolog.New(zerolog.ConsoleWriter{Out: os.Stderr}).With().Timestamp().Logger()
 
 func main() {
 	// Load output template.
 	tmpl, err := template.New("elm").Parse(elmTemplate)
 	if err != nil {
-		log.Fatalf("%+v", err)
+		logger.Fatal().Err(err).Msg("Couldn't parse template")
 	}
 
 	// Parse Go.
 	prog, rest, err := progFromArgs(os.Args[1:])
 	if err != nil {
-		log.Fatalf("%+v", err)
+		logger.Fatal().Err(err).Msg("Couldn't parse Go")
 	}
 	if len(rest) != 2 {
 		fmt.Fprintf(os.Stderr, "Want package and a single type to find, got: %v\n", rest)
@@ -32,17 +34,18 @@ func main() {
 	objectName := rest[1]
 
 	// Process definition.
+	resolver := NewResolver()
 	structType, err := structFromProg(prog, packageName, objectName)
 	if err != nil {
-		log.Fatalf("%+v", err)
+		logger.Fatal().Err(err).Msg("Couldn't find struct")
 	}
-	record, err := recordFromStruct(structType, objectName)
+	record, err := recordFromStruct(resolver, structType, objectName)
 	if err != nil {
-		log.Fatalf("%+v", err)
+		logger.Fatal().Err(err).Msg("Couldn't convert struct")
 	}
 	err = tmpl.Execute(os.Stdout, record)
 	if err != nil {
-		log.Fatalf("%+v", err)
+		logger.Fatal().Err(err).Msg("Couldn't render template")
 	}
 }
 
