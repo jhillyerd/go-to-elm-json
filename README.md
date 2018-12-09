@@ -17,7 +17,7 @@ Useful, but not feature complete.
 - [x] Support for optional fields
 - [x] Support nested structs
 - [x] Support nullable pointer types
-- [ ] Allow records to be renamed
+- [x] Allow records to be renamed
 - [ ] Handle `json:"-"` correctly
 - [ ] Specify module name
 - [ ] Support for string-keyed basic type maps
@@ -32,7 +32,7 @@ go get github.com/jhillyerd/go-to-elm-json
 
 ## Usage
 
-`go-to-elm-json <go source files> -- <package> <type>`
+`go-to-elm-json <go source files> -- <package> <go type:elm name>`
 
 ### Example
 
@@ -41,7 +41,7 @@ Given the file `foo/bar.go` containing:
 ```go
 package foo
 
-type User struct {
+type UserJSON struct {
 	Name    string   `json:"name"`
 	UserID  int      `json:"userID"`
 	Friends []string `json:"friends"`
@@ -49,7 +49,7 @@ type User struct {
 }
 ```
 
-Running: `go-to-elm-json foo/*.go -- foo User` will output:
+Running: `go-to-elm-json foo/*.go -- foo UserJSON:User` will output:
 
 ```elm
 module User exposing (User, decoder, encode)

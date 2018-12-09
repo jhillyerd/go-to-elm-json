@@ -134,12 +134,14 @@ func (t *ElmPointer) Nullable() bool {
 type ElmTypeResolver struct {
 	resolved map[string]*ElmRecord
 	ordered  []*ElmRecord
+	renames  TypeNamePairs
 }
 
 // NewResolver creates an empty resolver.
-func NewResolver() *ElmTypeResolver {
+func NewResolver(renames TypeNamePairs) *ElmTypeResolver {
 	return &ElmTypeResolver{
 		resolved: make(map[string]*ElmRecord),
+		renames:  renames,
 	}
 }
 

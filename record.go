@@ -119,8 +119,7 @@ func recordFromStruct(resolver *ElmTypeResolver, structDef *types.Struct, typeNa
 	if count == 0 {
 		return nil, errors.Errorf("struct %v had no fields", typeName)
 	}
-	camelCaseName := camelCase(typeName)
-	recordName := strings.ToUpper(camelCaseName[:1]) + camelCaseName[1:]
+	recordName := resolver.renames.ElmName(typeName)
 
 	// Convert to our field type.
 	var fields []*ElmField

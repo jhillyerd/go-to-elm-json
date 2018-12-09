@@ -52,7 +52,7 @@ func TestRecordFromStructErrors(t *testing.T) {
 	for _, tt := range tests {
 		structType, err := structFromProg(prog, "main", tt.name)
 		if err == nil {
-			_, err = recordFromStruct(NewResolver(), structType, tt.name)
+			_, err = recordFromStruct(NewResolver(make(TypeNamePairs)), structType, tt.name)
 		}
 		got := err != nil
 		if got != tt.errorExpected {
@@ -74,7 +74,7 @@ func TestRecordFromStructAbbrev(t *testing.T) {
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
-	record, err := recordFromStruct(NewResolver(), structType, input)
+	record, err := recordFromStruct(NewResolver(make(TypeNamePairs)), structType, input)
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
@@ -122,7 +122,7 @@ func TestRecordFromStructNameConversions(t *testing.T) {
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
-	got, err := recordFromStruct(NewResolver(), structType, name)
+	got, err := recordFromStruct(NewResolver(make(TypeNamePairs)), structType, name)
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
@@ -165,7 +165,7 @@ func TestParseStructMultipleNames(t *testing.T) {
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
-	got, err := recordFromStruct(NewResolver(), structType, name)
+	got, err := recordFromStruct(NewResolver(make(TypeNamePairs)), structType, name)
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
@@ -218,7 +218,7 @@ func TestRecordFromStructTypeConversions(t *testing.T) {
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
-	got, err := recordFromStruct(NewResolver(), structType, name)
+	got, err := recordFromStruct(NewResolver(make(TypeNamePairs)), structType, name)
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
@@ -261,7 +261,7 @@ func TestRecordFromStructSlices(t *testing.T) {
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
-	got, err := recordFromStruct(NewResolver(), structType, name)
+	got, err := recordFromStruct(NewResolver(make(TypeNamePairs)), structType, name)
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
@@ -307,7 +307,7 @@ func TestRecordFromStructOptionals(t *testing.T) {
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
-	got, err := recordFromStruct(NewResolver(), structType, name)
+	got, err := recordFromStruct(NewResolver(make(TypeNamePairs)), structType, name)
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
@@ -366,7 +366,7 @@ func TestRecordFromStructNullables(t *testing.T) {
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
-	got, err := recordFromStruct(NewResolver(), structType, name)
+	got, err := recordFromStruct(NewResolver(make(TypeNamePairs)), structType, name)
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
@@ -420,7 +420,7 @@ func TestRecordFromStructNested(t *testing.T) {
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
-	got, err := recordFromStruct(NewResolver(), structType, name)
+	got, err := recordFromStruct(NewResolver(make(TypeNamePairs)), structType, name)
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
@@ -439,5 +439,42 @@ func TestRecordFromStructNested(t *testing.T) {
 
 	if !got.Equal(want) {
 		t.Error("ElmRecord struct did not match expectations, likely in an ElmType field.")
+	}
+}
+
+func TestRecordFromStructNestedRenames(t *testing.T) {
+	prog, err := programs.load(examples)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	renames := make(TypeNamePairs)
+	renames.Add("NestedStructs:NewOuter")
+	renames.Add("innerStruct:NewInner")
+
+	name := "NestedStructs"
+	structType, err := structFromProg(prog, "main", name)
+	if err != nil {
+		t.Fatalf("%+v", err)
+	}
+	got, err := recordFromStruct(NewResolver(renames), structType, name)
+	if err != nil {
+		t.Fatalf("%+v", err)
+	}
+
+	wantName := "NewOuter"
+	gotName := got.name
+	if gotName != wantName {
+		t.Errorf("got name %q, want %q", gotName, wantName)
+	}
+
+	wantName = "NewInner"
+	gotType, ok := got.Fields[1].ElmType.(*ElmRecord)
+	if !ok {
+		t.Fatalf("want type *ElmRecord, got %T", got.Fields[1].ElmType)
+	}
+	gotName = gotType.name
+	if gotName != wantName {
+		t.Errorf("got name %q, want %q", gotName, wantName)
 	}
 }

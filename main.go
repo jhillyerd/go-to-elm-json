@@ -29,10 +29,10 @@ func main() {
 	verbose := flag.Bool("v", false, "verbose (debug) output")
 	color := flag.Bool("color", runtime.GOOS != "windows", "colorize debug output")
 	flag.Usage = func() {
+		fmt.Fprintf(flag.CommandLine.Output(), "Usage of %s [opts] <args> -- <pkg name> \\\n"+
+			"  <root go type:elm name> [<go type:elm name> ...]:\n\n", os.Args[0])
 		fmt.Fprintf(flag.CommandLine.Output(),
-			"Usage of %s [opts] <args> -- <pkg name> <type name>:\n", os.Args[0])
-		fmt.Fprintf(flag.CommandLine.Output(),
-			"  Ex: 'go-to-elm-json *.go -- main MyStruct > MyStruct.elm'\n\n")
+			"Example:\n  go-to-elm-json *.go -- main MyThingJSON:MyThing > MyThing.elm\n\n")
 		flag.PrintDefaults()
 		fmt.Fprintln(flag.CommandLine.Output(), loader.FromArgsUsage)
 	}
@@ -53,24 +53,33 @@ func main() {
 	if err != nil {
 		logger.Fatal().Err(err).Msg("Couldn't parse Go")
 	}
-	if len(rest) != 2 {
+	if len(rest) < 2 {
 		fmt.Fprintf(flag.CommandLine.Output(),
 			"Wanted a package and a struct type to convert, got: %v\n\n", rest)
 		flag.Usage()
 		os.Exit(1)
 	}
 	packageName := rest[0]
-	objectName := rest[1]
+	objectName, _ := splitTypeNamePair(rest[1])
+	renames := make(TypeNamePairs)
+	for _, arg := range rest[1:] {
+		renames.Add(arg)
+	}
 
 	// Output Elm.
-	err = generateElm(os.Stdout, prog, packageName, objectName)
+	err = generateElm(os.Stdout, prog, packageName, objectName, renames)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("Generation failed")
 	}
 }
 
 // generateElm processes the provided program and outputs Elm code to the provider writer.
-func generateElm(w io.Writer, prog *loader.Program, packageName string, objectName string) error {
+func generateElm(
+	w io.Writer,
+	prog *loader.Program,
+	packageName string,
+	objectName string,
+	renames TypeNamePairs) error {
 	// Load output template.
 	tmpl, err := template.New("elm").Parse(elmTemplate)
 	if err != nil {
@@ -82,7 +91,7 @@ func generateElm(w io.Writer, prog *loader.Program, packageName string, objectNa
 	if err != nil {
 		return errors.Wrap(err, "Couldn't find struct")
 	}
-	resolver := NewResolver()
+	resolver := NewResolver(renames)
 	record, err := recordFromStruct(resolver, structType, objectName)
 	if err != nil {
 		return errors.Wrap(err, "Couldn't convert struct")

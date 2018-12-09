@@ -27,7 +27,7 @@ func TestMainOutput(t *testing.T) {
 	buf := &bytes.Buffer{}
 	for _, tt := range tests {
 		buf.Reset()
-		err = generateElm(buf, prog, "main", tt.name)
+		err = generateElm(buf, prog, "main", tt.name, make(TypeNamePairs))
 		if err != nil {
 			t.Error(err)
 			continue
