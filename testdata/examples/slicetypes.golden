@@ -9,26 +9,26 @@ import Json.Encode as E
 
 
 type alias SliceTypes =
-    { bools : List Bool
-    , floats : List Float
-    , strings : List String
+    { bools : Maybe (List Bool)
+    , floats : Maybe (List Float)
+    , strings : Maybe (List String)
     }
 
 
 decoder : D.Decoder SliceTypes
 decoder =
     D.succeed SliceTypes
-        |> P.required "Bools" (D.list D.bool)
-        |> P.required "Floats" (D.list D.float)
-        |> P.required "Strings" (D.list D.string)
+        |> P.required "Bools" (D.nullable (D.list D.bool))
+        |> P.required "Floats" (D.nullable (D.list D.float))
+        |> P.required "Strings" (D.nullable (D.list D.string))
 
 
 encode : SliceTypes -> E.Value
 encode r =
     E.object
-        [ ("Bools", (E.list E.bool) r.bools)
-        , ("Floats", (E.list E.float) r.floats)
-        , ("Strings", (E.list E.string) r.strings)
+        [ ("Bools", maybe (E.list E.bool) r.bools)
+        , ("Floats", maybe (E.list E.float) r.floats)
+        , ("Strings", maybe (E.list E.string) r.strings)
         ]
 
 

@@ -12,6 +12,7 @@ type ElmType interface {
 	Decoder(prefix string) string
 	Encoder(prefix string) string
 	Equal(other ElmType) bool
+	Nullable() bool
 }
 
 func elmTypeName(t ElmType) string {
@@ -51,6 +52,11 @@ func (t *ElmBasicType) Equal(other ElmType) bool {
 	return false
 }
 
+// Nullable indicates whether this type can be nil.
+func (t *ElmBasicType) Nullable() bool {
+	return false
+}
+
 // ElmList represents a list of another type.
 type ElmList struct {
 	elem ElmType
@@ -77,6 +83,11 @@ func (t *ElmList) Equal(other ElmType) bool {
 		return t.elem.Equal(o.elem)
 	}
 	return false
+}
+
+// Nullable indicates whether this type can be nil.
+func (t *ElmList) Nullable() bool {
+	return true
 }
 
 var (
