@@ -60,8 +60,24 @@ type ElmField struct {
 	Optional bool
 }
 
-// ElmTypeDecl returns the type in Elm source format.
-func (f *ElmField) ElmTypeDecl() string {
+// Decoder returns the Elm JSON decoder for this field.
+func (f *ElmField) Decoder(prefix string) string {
+	if f.Optional {
+		return "(" + prefix + ".nullable " + f.ElmType.Decoder(prefix) + ")"
+	}
+	return f.ElmType.Decoder(prefix)
+}
+
+// Encoder reutrns the Elm JSON encoder for this field.
+func (f *ElmField) Encoder(prefix string) string {
+	if f.Optional {
+		return "maybe " + f.ElmType.Encoder(prefix)
+	}
+	return f.ElmType.Encoder(prefix)
+}
+
+// TypeDecl returns the type in Elm source format.
+func (f *ElmField) TypeDecl() string {
 	if f.Optional {
 		return "Maybe " + f.ElmType.Name()
 	}

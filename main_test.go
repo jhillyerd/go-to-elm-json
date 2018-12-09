@@ -26,6 +26,10 @@ func TestMainOutput(t *testing.T) {
 	for _, tt := range tests {
 		buf.Reset()
 		err = generateElm(buf, prog, "main", tt.name)
+		if err != nil {
+			t.Error(err)
+			continue
+		}
 		goldiff.File(t, buf.Bytes(), "testdata", "examples", tt.goldenFile)
 	}
 }

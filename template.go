@@ -14,7 +14,7 @@ import Json.Encode as E
 
 type alias {{.Name}} =
 {{- range $index, $el := .Fields }}
-    {{ if $index }},{{ else }}{{"{"}}{{ end }} {{ .ElmName }} : {{ .ElmTypeDecl -}}
+    {{ if $index }},{{ else }}{{"{"}}{{ end }} {{ .ElmName }} : {{ .TypeDecl -}}
 {{end}}
     {{"}"}}
 {{- end}}
@@ -23,7 +23,7 @@ type alias {{.Name}} =
 
 type alias {{.Name}} =
 {{- range $index, $el := .Fields }}
-    {{ if $index }},{{ else }}{{"{"}}{{ end }} {{ .ElmName }} : {{ .ElmTypeDecl -}}
+    {{ if $index }},{{ else }}{{"{"}}{{ end }} {{ .ElmName }} : {{ .TypeDecl -}}
 {{end}}
     {{"}"}}
 {{- end}}
@@ -34,7 +34,7 @@ decoder : D.Decoder {{.Name}}
 decoder =
     D.succeed {{.Name}}
 {{- range .Fields }}
-        |> P.required "{{ .JSONName }}" {{ .ElmType.Decoder "D" -}}
+        |> P.required "{{ .JSONName }}" {{ .Decoder "D" -}}
 {{end}}
 
 
@@ -42,7 +42,7 @@ encode : {{.Name}} -> E.Value
 encode r =
     E.object
 {{- range $index, $el := .Fields }}
-        {{ if $index }},{{ else }}[{{ end }} ("{{ .JSONName }}", {{ .ElmType.Encoder "E" }} r.{{ .ElmName }})
+        {{ if $index }},{{ else }}[{{ end }} ("{{ .JSONName }}", {{ .Encoder "E" }} r.{{ .ElmName }})
 {{- end}}
         ]
 {{- end}}
@@ -53,7 +53,7 @@ encode r =
 {{.Decoder "D" }} =
     D.succeed {{.Name}}
 {{- range .Fields }}
-        |> P.required "{{ .JSONName }}" {{ .ElmType.Decoder "D" -}}
+        |> P.required "{{ .JSONName }}" {{ .Decoder "D" -}}
 {{end}}
 
 
@@ -61,8 +61,13 @@ encode r =
 {{.Encoder "E" }} r =
     E.object
 {{- range $index, $el := .Fields }}
-        {{ if $index }},{{ else }}[{{ end }} ("{{ .JSONName }}", {{ .ElmType.Encoder "E" }} r.{{ .ElmName }})
+        {{ if $index }},{{ else }}[{{ end }} ("{{ .JSONName }}", {{ .Encoder "E" }} r.{{ .ElmName }})
 {{- end}}
         ]
 {{- end}}
+
+
+maybe : (a -> E.Value) -> Maybe a -> E.Value
+maybe encoder =
+    Maybe.map encoder >> Maybe.withDefault E.null
 `

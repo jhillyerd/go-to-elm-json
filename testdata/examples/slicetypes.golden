@@ -30,3 +30,8 @@ encode r =
         , ("Floats", (E.list E.float) r.floats)
         , ("Strings", (E.list E.string) r.strings)
         ]
+
+
+maybe : (a -> E.Value) -> Maybe a -> E.Value
+maybe encoder =
+    Maybe.map encoder >> Maybe.withDefault E.null

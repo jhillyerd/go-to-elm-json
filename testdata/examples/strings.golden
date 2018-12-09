@@ -21,8 +21,8 @@ decoder =
     D.succeed Strings
         |> P.required "ExportedBareString" D.string
         |> P.required "exported-tagged-string" D.string
-        |> P.required "exported-optional-string" D.string
-        |> P.required "AnotherOptionalString" D.string
+        |> P.required "exported-optional-string" (D.nullable D.string)
+        |> P.required "AnotherOptionalString" (D.nullable D.string)
 
 
 encode : Strings -> E.Value
@@ -30,6 +30,11 @@ encode r =
     E.object
         [ ("ExportedBareString", E.string r.exportedBareString)
         , ("exported-tagged-string", E.string r.exportedTaggedString)
-        , ("exported-optional-string", E.string r.exportedOptionalString)
-        , ("AnotherOptionalString", E.string r.anotherOptionalString)
+        , ("exported-optional-string", maybe E.string r.exportedOptionalString)
+        , ("AnotherOptionalString", maybe E.string r.anotherOptionalString)
         ]
+
+
+maybe : (a -> E.Value) -> Maybe a -> E.Value
+maybe encoder =
+    Maybe.map encoder >> Maybe.withDefault E.null
