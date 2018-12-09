@@ -11,8 +11,8 @@ import Json.Encode as E
 type alias Strings =
     { exportedBareString : String
     , exportedTaggedString : String
-    , exportedOptionalString : String
-    , anotherOptionalString : String
+    , exportedOptionalString : Maybe String
+    , anotherOptionalString : Maybe String
     }
 
 

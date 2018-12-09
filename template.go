@@ -14,7 +14,7 @@ import Json.Encode as E
 
 type alias {{.Name}} =
 {{- range $index, $el := .Fields }}
-    {{ if $index }},{{ else }}{{"{"}}{{ end }} {{ .ElmName }} : {{ .ElmType.Name -}}
+    {{ if $index }},{{ else }}{{"{"}}{{ end }} {{ .ElmName }} : {{ .ElmTypeDecl -}}
 {{end}}
     {{"}"}}
 {{- end}}
@@ -23,7 +23,7 @@ type alias {{.Name}} =
 
 type alias {{.Name}} =
 {{- range $index, $el := .Fields }}
-    {{ if $index }},{{ else }}{{"{"}}{{ end }} {{ .ElmName }} : {{ .ElmType.Name -}}
+    {{ if $index }},{{ else }}{{"{"}}{{ end }} {{ .ElmName }} : {{ .ElmTypeDecl -}}
 {{end}}
     {{"}"}}
 {{- end}}

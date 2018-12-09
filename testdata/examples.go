@@ -52,6 +52,13 @@ type NestedStructs struct {
 	InnerValue2 innerStruct
 }
 
+// OptionalValues exercises omitempty.
+type OptionalValues struct {
+	OptString string `json:"opt-string,omitempty"`
+	OptInt    int    `json:",omitempty"`
+	OptBool   bool   `json:",omitempty"`
+}
+
 type innerStruct struct {
 	Value string
 }

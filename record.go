@@ -57,6 +57,15 @@ type ElmField struct {
 	JSONName string
 	ElmName  string
 	ElmType  ElmType
+	Optional bool
+}
+
+// ElmTypeDecl returns the type in Elm source format.
+func (f *ElmField) ElmTypeDecl() string {
+	if f.Optional {
+		return "Maybe " + f.ElmType.Name()
+	}
+	return f.ElmType.Name()
 }
 
 // Equal test for equality with another field.
@@ -64,7 +73,8 @@ func (f *ElmField) Equal(o *ElmField) bool {
 	return f.JSONName == o.JSONName &&
 		f.ElmName == o.ElmName &&
 		f.ElmType != nil &&
-		f.ElmType.Equal(o.ElmType)
+		f.ElmType.Equal(o.ElmType) &&
+		f.Optional == o.Optional
 }
 
 func recordFromStruct(resolver *ElmTypeResolver, structDef *types.Struct, typeName string) (*ElmRecord, error) {
@@ -87,10 +97,14 @@ func recordFromStruct(resolver *ElmTypeResolver, structDef *types.Struct, typeNa
 		goType := sfield.Type()
 
 		jsonName := goName
+		optional := false
 		if len(stag) > 2 {
-			tagName, _ := parseTag(stag)
+			tagName, tagOpts := parseTag(stag)
 			if tagName != "" {
 				jsonName = tagName
+			}
+			if hasOption("omitempty", tagOpts) {
+				optional = true
 			}
 		}
 
@@ -110,6 +124,7 @@ func recordFromStruct(resolver *ElmTypeResolver, structDef *types.Struct, typeNa
 			JSONName: jsonName,
 			ElmName:  elmName,
 			ElmType:  elmType,
+			Optional: optional,
 		})
 	}
 
