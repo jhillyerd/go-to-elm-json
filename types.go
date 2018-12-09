@@ -9,7 +9,8 @@ import (
 // ElmType represents a type in Elm.
 type ElmType interface {
 	Name() string
-	Codec(prefix string) string
+	Decoder(prefix string) string
+	Encoder(prefix string) string
 	Equal(other ElmType) bool
 }
 
@@ -31,8 +32,13 @@ func (t *ElmBasicType) Name() string {
 	return t.name
 }
 
-// Codec returns the name of the Elm JSON encoder/decoder for this type.
-func (t *ElmBasicType) Codec(prefix string) string {
+// Decoder returns the name of the Elm JSON encoder/decoder for this type.
+func (t *ElmBasicType) Decoder(prefix string) string {
+	return prefix + "." + t.codec
+}
+
+// Encoder returns the name of the Elm JSON encoder/decoder for this type.
+func (t *ElmBasicType) Encoder(prefix string) string {
 	return prefix + "." + t.codec
 }
 
@@ -55,9 +61,14 @@ func (t *ElmList) Name() string {
 	return "List " + t.elem.Name()
 }
 
-// Codec returns the name of the Elm JSON encoder/decoder for this type.
-func (t *ElmList) Codec(prefix string) string {
-	return "(" + prefix + ".list " + t.elem.Codec(prefix) + ")"
+// Decoder returns the name of the Elm JSON encoder/decoder for this type.
+func (t *ElmList) Decoder(prefix string) string {
+	return "(" + prefix + ".list " + t.elem.Decoder(prefix) + ")"
+}
+
+// Encoder returns the name of the Elm JSON encoder/decoder for this type.
+func (t *ElmList) Encoder(prefix string) string {
+	return "(" + prefix + ".list " + t.elem.Encoder(prefix) + ")"
 }
 
 // Equal tests for equality with another ElmType.
@@ -77,13 +88,14 @@ var (
 
 // ElmTypeResolver maintains a cache of Go to Elm type conversions.
 type ElmTypeResolver struct {
-	resolved map[string]ElmType
+	resolved map[string]*ElmRecord
+	ordered  []*ElmRecord
 }
 
 // NewResolver creates an empty resolver.
 func NewResolver() *ElmTypeResolver {
 	return &ElmTypeResolver{
-		make(map[string]ElmType),
+		resolved: make(map[string]*ElmRecord),
 	}
 }
 
@@ -112,20 +124,31 @@ func (r *ElmTypeResolver) Convert(goType types.Type) (ElmType, error) {
 		goName := t.Obj().Name()
 		switch u := t.Underlying().(type) {
 		case *types.Struct:
-			if record := r.resolved[goName]; record != nil {
-				return record, nil
-			}
-			record, err := recordFromStruct(r, u, goName)
-			if err != nil {
-				return nil, err
-			}
-			logger.Debug().
-				Str("name", goName).
-				Str("type", elmTypeName(record)).
-				Msg("Caching resolved type")
-			r.resolved[goName] = record
-			return record, nil
+			return r.resolveRecord(goName, u)
 		}
 	}
 	return nil, errors.Errorf("don't know how to handle Go type %s (%T)", goType, goType)
+}
+
+// CachedRecords returns slice of resolved Elm records.
+func (r *ElmTypeResolver) CachedRecords() []*ElmRecord {
+	return r.ordered
+}
+
+// resolveRecord converts the struct to an Elm record, or returns the cached version.
+func (r *ElmTypeResolver) resolveRecord(goName string, stype *types.Struct) (*ElmRecord, error) {
+	if record := r.resolved[goName]; record != nil {
+		return record, nil
+	}
+	record, err := recordFromStruct(r, stype, goName)
+	if err != nil {
+		return nil, err
+	}
+	logger.Debug().
+		Str("name", goName).
+		Str("type", elmTypeName(record)).
+		Msg("Caching resolved type")
+	r.resolved[goName] = record
+	r.ordered = append(r.ordered, record)
+	return record, nil
 }

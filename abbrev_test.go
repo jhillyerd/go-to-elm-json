@@ -8,9 +8,9 @@ func TestCamelCase(t *testing.T) {
 	}{
 		{"", ""},
 		{"abc", "abc"},
-		{"MyWWW", "MyWww"},
-		{"HTMLBody", "HtmlBody"},
-		{"UserID", "UserId"},
+		{"MyWWW", "myWww"},
+		{"HTMLBody", "htmlBody"},
+		{"UserID", "userId"},
 		{"totalMBUploaded", "totalMbUploaded"},
 	}
 	for _, tc := range testCases {

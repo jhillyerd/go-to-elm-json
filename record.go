@@ -18,9 +18,19 @@ func (r *ElmRecord) Name() string {
 	return r.name
 }
 
-// Codec for this record type.
-func (r *ElmRecord) Codec(prefix string) string {
-	return "dunno"
+// CamelCasedName leads with lowercase.
+func (r *ElmRecord) CamelCasedName() string {
+	return camelCase(r.name)
+}
+
+// Decoder for this record type.
+func (r *ElmRecord) Decoder(prefix string) string {
+	return r.CamelCasedName() + "Decoder"
+}
+
+// Encoder for this record type.
+func (r *ElmRecord) Encoder(prefix string) string {
+	return "encode" + r.name
 }
 
 // Equal tests for equality with another ElmType.

@@ -27,8 +27,12 @@ var abbreviations = []string{
 var replacements = abbrevReplacements(abbreviations)
 
 func camelCase(s string) string {
+	if s == "" {
+		return ""
+	}
 	r := strings.NewReplacer(replacements...)
-	return r.Replace(s)
+	s = r.Replace(s)
+	return strings.ToLower(s[:1]) + s[1:]
 }
 
 // abbrevReplacements initial-uppercases each string in a, then interleaves the replacements for use
@@ -37,7 +41,7 @@ func abbrevReplacements(a []string) []string {
 	r := make([]string, 0, len(a)*2)
 	for _, s := range a {
 		r = append(r, s)
-		r = append(r, s[0:1]+strings.ToLower(s[1:]))
+		r = append(r, s[:1]+strings.ToLower(s[1:]))
 	}
 	return r
 }

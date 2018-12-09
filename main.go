@@ -14,6 +14,12 @@ import (
 
 var logger = zerolog.New(zerolog.ConsoleWriter{Out: os.Stderr}).With().Timestamp().Logger()
 
+// TemplateData holds the context for the template.
+type TemplateData struct {
+	Record *ElmRecord
+	Nested []*ElmRecord
+}
+
 func main() {
 
 	// Parse Go.
@@ -53,10 +59,17 @@ func generateElm(w io.Writer, prog *loader.Program, packageName string, objectNa
 	if err != nil {
 		return errors.Wrap(err, "Couldn't convert struct")
 	}
-	err = tmpl.Execute(w, record)
+
+	// Render Elm.
+	data := &TemplateData{
+		Record: record,
+		Nested: resolver.CachedRecords(),
+	}
+	err = tmpl.Execute(w, data)
 	if err != nil {
 		return errors.Wrap(err, "Couldn't render template")
 	}
+
 	return nil
 }
 
