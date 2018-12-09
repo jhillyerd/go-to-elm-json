@@ -1,10 +1,12 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"go/types"
 	"io"
 	"os"
+	"runtime"
 	"text/template"
 
 	"github.com/pkg/errors"
@@ -12,7 +14,9 @@ import (
 	"golang.org/x/tools/go/loader"
 )
 
-var logger = zerolog.New(zerolog.ConsoleWriter{Out: os.Stderr}).With().Timestamp().Logger()
+// logger used by unit tests.
+var logger = zerolog.New(
+	zerolog.ConsoleWriter{Out: os.Stderr, NoColor: true}).With().Timestamp().Logger()
 
 // TemplateData holds the context for the template.
 type TemplateData struct {
@@ -21,20 +25,44 @@ type TemplateData struct {
 }
 
 func main() {
+	// Flags.
+	verbose := flag.Bool("v", false, "verbose (debug) output")
+	color := flag.Bool("color", runtime.GOOS != "windows", "colorize debug output")
+	flag.Usage = func() {
+		fmt.Fprintf(flag.CommandLine.Output(),
+			"Usage of %s [opts] <args> -- <pkg name> <type name>:\n", os.Args[0])
+		fmt.Fprintf(flag.CommandLine.Output(),
+			"  Ex: 'go-to-elm-json *.go -- main MyStruct > MyStruct.elm'\n\n")
+		flag.PrintDefaults()
+		fmt.Fprintln(flag.CommandLine.Output(), loader.FromArgsUsage)
+	}
+	flag.Parse()
+
+	// Logging.
+	if *verbose {
+		zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	} else {
+		zerolog.SetGlobalLevel(zerolog.WarnLevel)
+	}
+	logger = zerolog.New(
+		zerolog.ConsoleWriter{Out: os.Stderr, NoColor: !*color}).
+		With().Timestamp().Logger()
 
 	// Parse Go.
-	prog, rest, err := progFromArgs(os.Args[1:])
+	prog, rest, err := progFromArgs(flag.Args())
 	if err != nil {
 		logger.Fatal().Err(err).Msg("Couldn't parse Go")
 	}
 	if len(rest) != 2 {
-		fmt.Fprintf(os.Stderr, "Want package and a single type to find, got: %v\n", rest)
-		fmt.Fprintln(os.Stderr, loader.FromArgsUsage)
+		fmt.Fprintf(flag.CommandLine.Output(),
+			"Wanted a package and a struct type to convert, got: %v\n\n", rest)
+		flag.Usage()
 		os.Exit(1)
 	}
 	packageName := rest[0]
 	objectName := rest[1]
 
+	// Output Elm.
 	err = generateElm(os.Stdout, prog, packageName, objectName)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("Generation failed")
