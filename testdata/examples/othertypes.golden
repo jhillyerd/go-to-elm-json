@@ -36,3 +36,8 @@ encode r =
         , ("BigFloat", E.float r.bigFloat)
         , ("NoNoNo", E.bool r.noNoNo)
         ]
+
+
+maybe : (a -> E.Value) -> Maybe a -> E.Value
+maybe encoder =
+    Maybe.map encoder >> Maybe.withDefault E.null

@@ -11,7 +11,8 @@ import Json.Encode as E
 type alias Strings =
     { exportedBareString : String
     , exportedTaggedString : String
-    , exportedOptionalString : String
+    , exportedOptionalString : Maybe String
+    , anotherOptionalString : Maybe String
     }
 
 
@@ -20,7 +21,8 @@ decoder =
     D.succeed Strings
         |> P.required "ExportedBareString" D.string
         |> P.required "exported-tagged-string" D.string
-        |> P.required "exported-optional-string" D.string
+        |> P.optional "exported-optional-string" (D.nullable D.string) Nothing
+        |> P.optional "AnotherOptionalString" (D.nullable D.string) Nothing
 
 
 encode : Strings -> E.Value
@@ -28,5 +30,11 @@ encode r =
     E.object
         [ ("ExportedBareString", E.string r.exportedBareString)
         , ("exported-tagged-string", E.string r.exportedTaggedString)
-        , ("exported-optional-string", E.string r.exportedOptionalString)
+        , ("exported-optional-string", maybe E.string r.exportedOptionalString)
+        , ("AnotherOptionalString", maybe E.string r.anotherOptionalString)
         ]
+
+
+maybe : (a -> E.Value) -> Maybe a -> E.Value
+maybe encoder =
+    Maybe.map encoder >> Maybe.withDefault E.null

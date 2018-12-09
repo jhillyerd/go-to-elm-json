@@ -48,3 +48,8 @@ encodeInnerStruct r =
     E.object
         [ ("Value", E.string r.value)
         ]
+
+
+maybe : (a -> E.Value) -> Maybe a -> E.Value
+maybe encoder =
+    Maybe.map encoder >> Maybe.withDefault E.null

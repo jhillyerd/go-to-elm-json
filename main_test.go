@@ -20,12 +20,17 @@ func TestMainOutput(t *testing.T) {
 		{"OtherTypes", "othertypes.golden"},
 		{"SliceTypes", "slicetypes.golden"},
 		{"NestedStructs", "nestedstructs.golden"},
+		{"OptionalValues", "optionalvalues.golden"},
 	}
 
 	buf := &bytes.Buffer{}
 	for _, tt := range tests {
 		buf.Reset()
 		err = generateElm(buf, prog, "main", tt.name)
+		if err != nil {
+			t.Error(err)
+			continue
+		}
 		goldiff.File(t, buf.Bytes(), "testdata", "examples", tt.goldenFile)
 	}
 }

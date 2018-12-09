@@ -47,6 +47,7 @@ func TestRecordFromStructErrors(t *testing.T) {
 		{"AnInterface", true},
 		{"Empty", true},
 		{"Strings", false},
+		{"OptionalValues", false},
 	}
 	for _, tt := range tests {
 		structType, err := structFromProg(prog, "main", tt.name)
@@ -107,6 +108,13 @@ func TestRecordFromStructNameConversions(t *testing.T) {
 				JSONName: "exported-optional-string",
 				ElmName:  "exportedOptionalString",
 				ElmType:  elmString,
+				Optional: true,
+			},
+			{
+				JSONName: "AnotherOptionalString",
+				ElmName:  "anotherOptionalString",
+				ElmType:  elmString,
+				Optional: true,
 			},
 		},
 	}
@@ -246,6 +254,52 @@ func TestRecordFromStructSlices(t *testing.T) {
 				JSONName: "Strings",
 				ElmName:  "strings",
 				ElmType:  &ElmList{elem: elmString},
+			},
+		},
+	}
+	structType, err := structFromProg(prog, "main", name)
+	if err != nil {
+		t.Fatalf("%+v", err)
+	}
+	got, err := recordFromStruct(NewResolver(), structType, name)
+	if err != nil {
+		t.Fatalf("%+v", err)
+	}
+	if diff := deep.Equal(got, want); diff != nil {
+		t.Fatal("ElmRecord struct did not match expectations:\n" + strings.Join(diff, "\n"))
+	}
+	if !got.Equal(want) {
+		t.Error("ElmRecord struct did not match expectations, likely in an ElmType field.")
+	}
+}
+
+func TestRecordFromStructOptionals(t *testing.T) {
+	prog, err := programs.load(examples)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	name := "OptionalValues"
+	want := &ElmRecord{
+		name: name,
+		Fields: []*ElmField{
+			{
+				JSONName: "opt-string",
+				ElmName:  "optString",
+				ElmType:  elmString,
+				Optional: true,
+			},
+			{
+				JSONName: "OptInt",
+				ElmName:  "optInt",
+				ElmType:  elmInt,
+				Optional: true,
+			},
+			{
+				JSONName: "OptBool",
+				ElmName:  "optBool",
+				ElmType:  elmBool,
+				Optional: true,
 			},
 		},
 	}

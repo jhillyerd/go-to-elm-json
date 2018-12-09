@@ -57,6 +57,47 @@ type ElmField struct {
 	JSONName string
 	ElmName  string
 	ElmType  ElmType
+	Optional bool
+}
+
+// Decoder returns the Elm JSON decoder for this field.
+func (f *ElmField) Decoder(prefix string) string {
+	if f.Optional {
+		return "(" + prefix + ".nullable " + f.ElmType.Decoder(prefix) + ")"
+	}
+	return f.ElmType.Decoder(prefix)
+}
+
+// Default returns a space-prefixed default value, or empty string.
+func (f *ElmField) Default() string {
+	if f.Optional {
+		return " Nothing"
+	}
+	return ""
+}
+
+// Encoder reutrns the Elm JSON encoder for this field.
+func (f *ElmField) Encoder(prefix string) string {
+	if f.Optional {
+		return "maybe " + f.ElmType.Encoder(prefix)
+	}
+	return f.ElmType.Encoder(prefix)
+}
+
+// Pipeline returns the elm-decode-pipline function for this field.
+func (f *ElmField) Pipeline(prefix string) string {
+	if f.Optional {
+		return prefix + ".optional"
+	}
+	return prefix + ".required"
+}
+
+// TypeDecl returns the type in Elm source format.
+func (f *ElmField) TypeDecl() string {
+	if f.Optional {
+		return "Maybe " + f.ElmType.Name()
+	}
+	return f.ElmType.Name()
 }
 
 // Equal test for equality with another field.
@@ -64,7 +105,8 @@ func (f *ElmField) Equal(o *ElmField) bool {
 	return f.JSONName == o.JSONName &&
 		f.ElmName == o.ElmName &&
 		f.ElmType != nil &&
-		f.ElmType.Equal(o.ElmType)
+		f.ElmType.Equal(o.ElmType) &&
+		f.Optional == o.Optional
 }
 
 func recordFromStruct(resolver *ElmTypeResolver, structDef *types.Struct, typeName string) (*ElmRecord, error) {
@@ -87,9 +129,15 @@ func recordFromStruct(resolver *ElmTypeResolver, structDef *types.Struct, typeNa
 		goType := sfield.Type()
 
 		jsonName := goName
+		optional := false
 		if len(stag) > 2 {
-			tagName, _ := parseTag(stag)
-			jsonName = tagName
+			tagName, tagOpts := parseTag(stag)
+			if tagName != "" {
+				jsonName = tagName
+			}
+			if hasOption("omitempty", tagOpts) {
+				optional = true
+			}
 		}
 
 		// Handle abbrevations.
@@ -108,6 +156,7 @@ func recordFromStruct(resolver *ElmTypeResolver, structDef *types.Struct, typeNa
 			JSONName: jsonName,
 			ElmName:  elmName,
 			ElmType:  elmType,
+			Optional: optional,
 		})
 	}
 
