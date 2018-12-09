@@ -12,7 +12,7 @@ A tool to create Elm JSON decoder pipelines from Go struct type definitions.
 - [x] Generate encoder
 - [x] Usage example in README
 - [x] Support slice form of basic types
-- [ ] Support for optional fields
+- [x] Support for optional fields
 - [ ] Support for string-keyed basic type maps
 - [x] Support nested structs
 - [ ] Allow records to be renamed

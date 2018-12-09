@@ -68,12 +68,28 @@ func (f *ElmField) Decoder(prefix string) string {
 	return f.ElmType.Decoder(prefix)
 }
 
+// Default returns a space-prefixed default value, or empty string.
+func (f *ElmField) Default() string {
+	if f.Optional {
+		return " Nothing"
+	}
+	return ""
+}
+
 // Encoder reutrns the Elm JSON encoder for this field.
 func (f *ElmField) Encoder(prefix string) string {
 	if f.Optional {
 		return "maybe " + f.ElmType.Encoder(prefix)
 	}
 	return f.ElmType.Encoder(prefix)
+}
+
+// Pipeline returns the elm-decode-pipline function for this field.
+func (f *ElmField) Pipeline(prefix string) string {
+	if f.Optional {
+		return prefix + ".optional"
+	}
+	return prefix + ".required"
 }
 
 // TypeDecl returns the type in Elm source format.

@@ -20,6 +20,7 @@ func TestMainOutput(t *testing.T) {
 		{"OtherTypes", "othertypes.golden"},
 		{"SliceTypes", "slicetypes.golden"},
 		{"NestedStructs", "nestedstructs.golden"},
+		{"OptionalValues", "optionalvalues.golden"},
 	}
 
 	buf := &bytes.Buffer{}

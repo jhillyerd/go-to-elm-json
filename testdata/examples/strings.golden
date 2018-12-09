@@ -21,8 +21,8 @@ decoder =
     D.succeed Strings
         |> P.required "ExportedBareString" D.string
         |> P.required "exported-tagged-string" D.string
-        |> P.required "exported-optional-string" (D.nullable D.string)
-        |> P.required "AnotherOptionalString" (D.nullable D.string)
+        |> P.optional "exported-optional-string" (D.nullable D.string) Nothing
+        |> P.optional "AnotherOptionalString" (D.nullable D.string) Nothing
 
 
 encode : Strings -> E.Value

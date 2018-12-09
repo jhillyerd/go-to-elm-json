@@ -34,7 +34,7 @@ decoder : D.Decoder {{.Name}}
 decoder =
     D.succeed {{.Name}}
 {{- range .Fields }}
-        |> P.required "{{ .JSONName }}" {{ .Decoder "D" -}}
+        |> {{ .Pipeline "P" }} "{{ .JSONName }}" {{ .Decoder "D" }}{{ .Default -}}
 {{end}}
 
 
