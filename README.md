@@ -1,4 +1,6 @@
 # go-to-elm-json
+[![Build Status](https://travis-ci.org/jhillyerd/go-to-elm-json.svg?branch=master)][Build Status]
+[![Coverage Status](https://coveralls.io/repos/github/jhillyerd/go-to-elm-json/badge.svg?branch=master)][Coverage Status]
 
 A tool to create Elm JSON decoder pipelines from Go struct type definitions.
 
@@ -85,3 +87,17 @@ encode r =
         , ("enabled", E.bool r.enabled)
         ]
 ```
+
+
+## Contributing
+
+PRs welcome, please:
+
+- Base your work off of the `development` branch, and target pull requests to
+  the same.
+- Run the unit tests before filing a PR.  `make` will run tests and lint.
+- Include unit tests for your changes.
+
+
+[Build Status]:    https://travis-ci.org/jhillyerd/go-to-elm-json
+[Coverage Status]: https://coveralls.io/github/jhillyerd/go-to-elm-json?branch=master
