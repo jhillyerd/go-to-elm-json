@@ -1,0 +1,43 @@
+name: Build and Test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go:
+          - 1.19.x
+          - 1.21.x
+    name: Go ${{ matrix.go }} build
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Setup Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: ${{ matrix.go }}
+      - name: Build and Test
+        run: |
+          go build
+          go test -race -coverprofile=profile.cov ./...
+      - name: Send coverage
+        uses: shogo82148/actions-goveralls@v1
+        with:
+          path-to-profile: profile.cov
+          flag-name: Go-${{ matrix.go }}
+          parallel: true
+  coverage:
+    needs: build
+    name: Test Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: shogo82148/actions-goveralls@v1
+        with:
+          parallel-finished: true
