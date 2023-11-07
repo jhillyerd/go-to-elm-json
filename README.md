@@ -28,7 +28,7 @@ Useful, but not feature complete.
 ## Install
 
 ```
-go get github.com/jhillyerd/go-to-elm-json
+go install github.com/jhillyerd/go-to-elm-json
 ```
 
 
