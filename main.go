@@ -34,7 +34,7 @@ func main() {
 		fmt.Fprintf(flag.CommandLine.Output(),
 			"Example:\n  go-to-elm-json *.go -- main MyThingJSON:MyThing > MyThing.elm\n\n")
 		flag.PrintDefaults()
-		fmt.Fprintln(flag.CommandLine.Output(), loader.FromArgsUsage)
+		fmt.Fprint(flag.CommandLine.Output(), loader.FromArgsUsage)
 	}
 	flag.Parse()
 
