@@ -12,3 +12,4 @@
 *.out
 
 go-to-elm-json
+.direnv
