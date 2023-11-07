@@ -1,6 +1,6 @@
 # go-to-elm-json
-[![Build Status](https://travis-ci.org/jhillyerd/go-to-elm-json.svg?branch=master)][Build Status]
-[![Coverage Status](https://coveralls.io/repos/github/jhillyerd/go-to-elm-json/badge.svg?branch=master)][Coverage Status]
+[![Build and Test](https://github.com/jhillyerd/go-to-elm-json/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/jhillyerd/go-to-elm-json/actions/workflows/build-and-test.yml)
+[![Coverage Status](https://coveralls.io/repos/github/jhillyerd/go-to-elm-json/badge.svg?branch=main)](https://coveralls.io/github/jhillyerd/go-to-elm-json?branch=main)
 
 A tool to create Elm JSON decoder pipelines from Go struct type definitions.
 
