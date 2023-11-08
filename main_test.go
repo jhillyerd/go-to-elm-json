@@ -8,7 +8,7 @@ import (
 )
 
 func TestMainOutput(t *testing.T) {
-	prog, err := programs.load(examples)
+	pkgs, err := pkgCache.load(examples)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -27,7 +27,7 @@ func TestMainOutput(t *testing.T) {
 	buf := &bytes.Buffer{}
 	for _, tt := range tests {
 		buf.Reset()
-		err = generateElm(buf, prog, "main", tt.name, make(TypeNamePairs))
+		err = generateElm(buf, pkgs, "main", tt.name, make(TypeNamePairs))
 		if err != nil {
 			t.Error(err)
 			continue
