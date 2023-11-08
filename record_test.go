@@ -58,7 +58,7 @@ func TestRecordFromStructErrors(t *testing.T) {
 		{"OptionalValues", false},
 	}
 	for _, tt := range tests {
-		structType, err := structFromPackage(pkgs, "main", tt.name)
+		structType, err := getStructDef(pkgs, "main", tt.name)
 		if err == nil {
 			_, err = recordFromStruct(NewResolver(make(TypeNamePairs)), structType, tt.name)
 		}
@@ -78,7 +78,7 @@ func TestRecordFromStructAbbrev(t *testing.T) {
 
 	input := "JSONObject"
 	want := "JsonObject"
-	structType, err := structFromPackage(pkgs, "main", input)
+	structType, err := getStructDef(pkgs, "main", input)
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
@@ -126,7 +126,7 @@ func TestRecordFromStructNameConversions(t *testing.T) {
 			},
 		},
 	}
-	structType, err := structFromPackage(pkgs, "main", name)
+	structType, err := getStructDef(pkgs, "main", name)
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
@@ -169,7 +169,7 @@ func TestParseStructMultipleNames(t *testing.T) {
 			},
 		},
 	}
-	structType, err := structFromPackage(pkgs, "main", name)
+	structType, err := getStructDef(pkgs, "main", name)
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
@@ -222,7 +222,7 @@ func TestRecordFromStructTypeConversions(t *testing.T) {
 			},
 		},
 	}
-	structType, err := structFromPackage(pkgs, "main", name)
+	structType, err := getStructDef(pkgs, "main", name)
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
@@ -265,7 +265,7 @@ func TestRecordFromStructSlices(t *testing.T) {
 			},
 		},
 	}
-	structType, err := structFromPackage(pkgs, "main", name)
+	structType, err := getStructDef(pkgs, "main", name)
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
@@ -311,7 +311,7 @@ func TestRecordFromStructOptionals(t *testing.T) {
 			},
 		},
 	}
-	structType, err := structFromPackage(pkgs, "main", name)
+	structType, err := getStructDef(pkgs, "main", name)
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
@@ -370,7 +370,7 @@ func TestRecordFromStructNullables(t *testing.T) {
 			},
 		},
 	}
-	structType, err := structFromPackage(pkgs, "main", name)
+	structType, err := getStructDef(pkgs, "main", name)
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
@@ -424,7 +424,7 @@ func TestRecordFromStructNested(t *testing.T) {
 			},
 		},
 	}
-	structType, err := structFromPackage(pkgs, "main", name)
+	structType, err := getStructDef(pkgs, "main", name)
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
@@ -461,7 +461,7 @@ func TestRecordFromStructNestedRenames(t *testing.T) {
 	renames.Add("innerStruct:NewInner")
 
 	name := "NestedStructs"
-	structType, err := structFromPackage(pkgs, "main", name)
+	structType, err := getStructDef(pkgs, "main", name)
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}

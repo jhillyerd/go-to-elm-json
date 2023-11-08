@@ -14,9 +14,15 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
-// logger used by unit tests.
-var logger = zerolog.New(
-	zerolog.ConsoleWriter{Out: os.Stderr, NoColor: true}).With().Timestamp().Logger()
+var (
+	// logger base configuration, used by unit tests as well.
+	logWriter = zerolog.ConsoleWriter{
+		Out:        os.Stderr,
+		NoColor:    true,
+		PartsOrder: []string{zerolog.LevelFieldName, zerolog.MessageFieldName},
+	}
+	logger = zerolog.New(logWriter)
+)
 
 // TemplateData holds the context for the template.
 type TemplateData struct {
@@ -58,9 +64,8 @@ func main() {
 	} else {
 		zerolog.SetGlobalLevel(zerolog.WarnLevel)
 	}
-	logger = zerolog.New(
-		zerolog.ConsoleWriter{Out: os.Stderr, NoColor: !*color}).
-		With().Timestamp().Logger()
+	logWriter.NoColor = !*color
+	logger = zerolog.New(logWriter)
 
 	// Split files and args at `--`.
 	var args []string
@@ -112,7 +117,7 @@ func generateElm(
 	}
 
 	// Process definition.
-	structType, err := structFromPackage(pkgs, packageName, objectName)
+	structType, err := getStructDef(pkgs, packageName, objectName)
 	if err != nil {
 		return errors.Wrap(err, "Couldn't find struct")
 	}
@@ -166,8 +171,8 @@ func loadPackages(args []string) (pkgs []*packages.Package, err error) {
 	return pkgs, nil
 }
 
-// structFromPackage finds the requested object and confirms it's a struct type definition.
-func structFromPackage(pkgs []*packages.Package, packageName, typeName string) (*types.Struct, error) {
+// getStructDef finds the requested object and confirms it's a struct type definition.
+func getStructDef(pkgs []*packages.Package, packageName, typeName string) (*types.Struct, error) {
 	// Lookup package.
 	var pkg *packages.Package
 	for _, p := range pkgs {
