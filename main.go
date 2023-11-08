@@ -117,7 +117,7 @@ func generateElm(
 	}
 
 	// Process definition.
-	structType, err := structFromPackage(pkgs, packageName, objectName)
+	structType, err := getStructDef(pkgs, packageName, objectName)
 	if err != nil {
 		return errors.Wrap(err, "Couldn't find struct")
 	}
@@ -171,8 +171,8 @@ func loadPackages(args []string) (pkgs []*packages.Package, err error) {
 	return pkgs, nil
 }
 
-// structFromPackage finds the requested object and confirms it's a struct type definition.
-func structFromPackage(pkgs []*packages.Package, packageName, typeName string) (*types.Struct, error) {
+// getStructDef finds the requested object and confirms it's a struct type definition.
+func getStructDef(pkgs []*packages.Package, packageName, typeName string) (*types.Struct, error) {
 	// Lookup package.
 	var pkg *packages.Package
 	for _, p := range pkgs {
