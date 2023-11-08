@@ -6,35 +6,43 @@ import (
 	"testing"
 
 	"github.com/go-test/deep"
-	"golang.org/x/tools/go/loader"
+	"golang.org/x/tools/go/packages"
 )
 
-type programCache struct {
+// packageCache prevents each test from having to re-parse the Go example code.
+type packageCache struct {
 	sync.Mutex
-	loadedProgs map[string]*loader.Program
+	loadedPkgs map[string][]*packages.Package
 }
 
-func (p *programCache) load(path string) (prog *loader.Program, err error) {
+func (p *packageCache) load(path string) (pkgs []*packages.Package, err error) {
 	p.Lock()
 	defer p.Unlock()
-	if p.loadedProgs == nil {
-		p.loadedProgs = make(map[string]*loader.Program)
+
+	if p.loadedPkgs == nil {
+		p.loadedPkgs = make(map[string][]*packages.Package)
 	}
-	prog = p.loadedProgs[path]
-	if prog != nil {
-		return prog, nil
+
+	// Check cache first.
+	if pkgs, ok := p.loadedPkgs[path]; ok {
+		return pkgs, nil
 	}
-	prog, _, err = progFromArgs([]string{path})
-	p.loadedProgs[path] = prog
-	return prog, err
+
+	pkgs, err = loadPackages([]string{path})
+	if err != nil {
+		return nil, err
+	}
+
+	p.loadedPkgs[path] = pkgs
+	return pkgs, nil
 }
 
-var programs = &programCache{}
+var pkgCache = &packageCache{}
 
 const examples = "testdata/examples.go"
 
 func TestRecordFromStructErrors(t *testing.T) {
-	prog, err := programs.load(examples)
+	pkgs, err := pkgCache.load(examples)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -50,7 +58,7 @@ func TestRecordFromStructErrors(t *testing.T) {
 		{"OptionalValues", false},
 	}
 	for _, tt := range tests {
-		structType, err := structFromProg(prog, "main", tt.name)
+		structType, err := structFromPackage(pkgs, "main", tt.name)
 		if err == nil {
 			_, err = recordFromStruct(NewResolver(make(TypeNamePairs)), structType, tt.name)
 		}
@@ -63,14 +71,14 @@ func TestRecordFromStructErrors(t *testing.T) {
 }
 
 func TestRecordFromStructAbbrev(t *testing.T) {
-	prog, err := programs.load(examples)
+	pkgs, err := pkgCache.load(examples)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	input := "JSONObject"
 	want := "JsonObject"
-	structType, err := structFromProg(prog, "main", input)
+	structType, err := structFromPackage(pkgs, "main", input)
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
@@ -85,7 +93,7 @@ func TestRecordFromStructAbbrev(t *testing.T) {
 }
 
 func TestRecordFromStructNameConversions(t *testing.T) {
-	prog, err := programs.load(examples)
+	pkgs, err := pkgCache.load(examples)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -118,7 +126,7 @@ func TestRecordFromStructNameConversions(t *testing.T) {
 			},
 		},
 	}
-	structType, err := structFromProg(prog, "main", name)
+	structType, err := structFromPackage(pkgs, "main", name)
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
@@ -135,7 +143,7 @@ func TestRecordFromStructNameConversions(t *testing.T) {
 }
 
 func TestParseStructMultipleNames(t *testing.T) {
-	prog, err := programs.load(examples)
+	pkgs, err := pkgCache.load(examples)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -161,7 +169,7 @@ func TestParseStructMultipleNames(t *testing.T) {
 			},
 		},
 	}
-	structType, err := structFromProg(prog, "main", name)
+	structType, err := structFromPackage(pkgs, "main", name)
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
@@ -178,7 +186,7 @@ func TestParseStructMultipleNames(t *testing.T) {
 }
 
 func TestRecordFromStructTypeConversions(t *testing.T) {
-	prog, err := programs.load(examples)
+	pkgs, err := pkgCache.load(examples)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -214,7 +222,7 @@ func TestRecordFromStructTypeConversions(t *testing.T) {
 			},
 		},
 	}
-	structType, err := structFromProg(prog, "main", name)
+	structType, err := structFromPackage(pkgs, "main", name)
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
@@ -231,7 +239,7 @@ func TestRecordFromStructTypeConversions(t *testing.T) {
 }
 
 func TestRecordFromStructSlices(t *testing.T) {
-	prog, err := programs.load(examples)
+	pkgs, err := pkgCache.load(examples)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -257,7 +265,7 @@ func TestRecordFromStructSlices(t *testing.T) {
 			},
 		},
 	}
-	structType, err := structFromProg(prog, "main", name)
+	structType, err := structFromPackage(pkgs, "main", name)
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
@@ -274,7 +282,7 @@ func TestRecordFromStructSlices(t *testing.T) {
 }
 
 func TestRecordFromStructOptionals(t *testing.T) {
-	prog, err := programs.load(examples)
+	pkgs, err := pkgCache.load(examples)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -303,7 +311,7 @@ func TestRecordFromStructOptionals(t *testing.T) {
 			},
 		},
 	}
-	structType, err := structFromProg(prog, "main", name)
+	structType, err := structFromPackage(pkgs, "main", name)
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
@@ -320,7 +328,7 @@ func TestRecordFromStructOptionals(t *testing.T) {
 }
 
 func TestRecordFromStructNullables(t *testing.T) {
-	prog, err := programs.load(examples)
+	pkgs, err := pkgCache.load(examples)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -362,7 +370,7 @@ func TestRecordFromStructNullables(t *testing.T) {
 			},
 		},
 	}
-	structType, err := structFromProg(prog, "main", name)
+	structType, err := structFromPackage(pkgs, "main", name)
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
@@ -379,7 +387,7 @@ func TestRecordFromStructNullables(t *testing.T) {
 }
 
 func TestRecordFromStructNested(t *testing.T) {
-	prog, err := programs.load(examples)
+	pkgs, err := pkgCache.load(examples)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -416,7 +424,7 @@ func TestRecordFromStructNested(t *testing.T) {
 			},
 		},
 	}
-	structType, err := structFromProg(prog, "main", name)
+	structType, err := structFromPackage(pkgs, "main", name)
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
@@ -443,7 +451,7 @@ func TestRecordFromStructNested(t *testing.T) {
 }
 
 func TestRecordFromStructNestedRenames(t *testing.T) {
-	prog, err := programs.load(examples)
+	pkgs, err := pkgCache.load(examples)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -453,7 +461,7 @@ func TestRecordFromStructNestedRenames(t *testing.T) {
 	renames.Add("innerStruct:NewInner")
 
 	name := "NestedStructs"
-	structType, err := structFromProg(prog, "main", name)
+	structType, err := structFromPackage(pkgs, "main", name)
 	if err != nil {
 		t.Fatalf("%+v", err)
 	}
